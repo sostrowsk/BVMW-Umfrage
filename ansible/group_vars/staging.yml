@@ -1,0 +1,103 @@
+---
+# Staging Environment Configuration
+environment: staging
+environment_name: "Staging Environment"
+
+# Application Settings
+app_workers: 2
+app_reload: false
+app_log_level: info
+debug_mode: false
+hot_reload: false
+
+# Database Configuration
+db_host: "{{ vault_staging_db_host | default('staging-db.survey-platform.internal') }}"
+db_port: 5432
+db_name: survey_platform_staging
+db_user: survey_staging
+db_password: "{{ vault_staging_db_password }}"
+
+# SSL Configuration
+setup_ssl: true
+ssl_provider: letsencrypt
+letsencrypt_email: devops@survey-platform.com
+letsencrypt_staging: true  # Use Let's Encrypt staging for testing
+nginx_server_name: staging.survey-platform.com
+
+# Infrastructure Setup
+setup_nginx: true
+setup_firewall: true
+setup_monitoring: true
+setup_backup: true
+
+# Docker Configuration
+docker_network_name: survey_staging_network
+docker_compose_env: staging
+docker_registry: "{{ vault_docker_registry | default('') }}"
+docker_image_tag: staging
+
+# API Configuration
+enable_api_docs: true  # Keep docs enabled for testing
+enable_cors: true
+cors_origins:
+  - https://staging.survey-platform.com
+  - https://staging-app.survey-platform.com
+  - http://localhost:3000  # For local frontend development
+
+# Email Configuration
+smtp_host: "{{ vault_staging_smtp_host | default('smtp.sendgrid.net') }}"
+smtp_port: 587
+smtp_user: "{{ vault_staging_smtp_user }}"
+smtp_password: "{{ vault_staging_smtp_password }}"
+smtp_from_email: noreply@staging.survey-platform.com
+emails_enabled: true
+
+# Feature Flags for Staging
+enable_user_registration: true
+enable_password_recovery: true
+enable_email_verification: true
+enable_anonymous_responses: false
+mock_external_services: false
+
+# Performance Settings
+max_request_size: 10485760
+request_timeout: 30
+worker_connections: 500
+rate_limit_per_minute: 100
+
+# Monitoring
+prometheus_enabled: true
+prometheus_port: 9090
+grafana_enabled: true
+grafana_port: 3000
+setup_alerts: false  # No alerts for staging
+
+# Logging
+log_path: /var/log/survey-platform-staging
+log_retention_days: 30
+log_level: info
+sentry_dsn: "{{ vault_staging_sentry_dsn | default('') }}"
+
+# Backup Configuration
+backup_retention_days: 14
+backup_s3_bucket: survey-staging-backups
+backup_s3_region: eu-central-1
+backup_s3_access_key: "{{ vault_staging_s3_access_key }}"
+backup_s3_secret_key: "{{ vault_staging_s3_secret_key }}"
+
+# Cache Configuration
+cache_enabled: true
+cache_ttl_seconds: 1800
+redis_host: localhost
+redis_port: 6379
+setup_redis: true
+
+# Security
+fail2ban_enabled: true
+fail2ban_maxretry: 10
+fail2ban_bantime: 1800
+
+# Testing Features
+enable_test_endpoints: true
+enable_debug_headers: true
+enable_performance_profiling: true

@@ -1,0 +1,8 @@
+---
+# Production Web Server 1 - Primary
+server_role: web_primary
+server_priority: 1
+nginx_upstream_weight: 3  # Higher weight for primary server
+enable_canary: true  # Use this server for canary deployments
+max_connections: 2000
+worker_processes: auto

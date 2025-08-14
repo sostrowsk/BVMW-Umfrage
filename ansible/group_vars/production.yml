@@ -1,0 +1,156 @@
+---
+# Production Environment Configuration
+environment: production
+environment_name: "Production Environment"
+
+# Application Settings
+app_workers: 4
+app_reload: false
+app_log_level: warning
+debug_mode: false
+hot_reload: false
+
+# Database Configuration (High Availability)
+db_host: "{{ vault_prod_db_host | default('prod-db.survey-platform.internal') }}"
+db_port: 5432
+db_name: survey_platform_production
+db_user: survey_prod
+db_password: "{{ vault_prod_db_password }}"
+
+# Database Optimization
+postgres_max_connections: 200
+postgres_shared_buffers: 512MB
+postgres_effective_cache_size: 2GB
+postgres_maintenance_work_mem: 256MB
+postgres_checkpoint_completion_target: 0.9
+postgres_wal_buffers: 16MB
+postgres_default_statistics_target: 100
+postgres_random_page_cost: 1.1
+
+# SSL Configuration
+setup_ssl: true
+ssl_provider: letsencrypt
+letsencrypt_email: admin@survey-platform.com
+letsencrypt_staging: false
+nginx_server_name: app.survey-platform.com
+
+# Infrastructure Setup
+setup_nginx: true
+setup_firewall: true
+setup_monitoring: true
+setup_backup: true
+setup_redis: true
+
+# Docker Configuration
+docker_network_name: survey_production_network
+docker_compose_env: production
+docker_registry: "{{ vault_docker_registry }}"
+docker_image_tag: "{{ docker_tag | default('latest') }}"
+docker_pull_policy: always
+
+# API Configuration
+enable_api_docs: false  # Disable docs in production
+enable_cors: true
+cors_origins:
+  - https://app.survey-platform.com
+  - https://www.survey-platform.com
+
+# Email Configuration
+smtp_host: "{{ vault_prod_smtp_host }}"
+smtp_port: 587
+smtp_user: "{{ vault_prod_smtp_user }}"
+smtp_password: "{{ vault_prod_smtp_password }}"
+smtp_from_email: noreply@survey-platform.com
+smtp_from_name: Survey Platform
+emails_enabled: true
+
+# Feature Flags for Production
+enable_user_registration: true
+enable_password_recovery: true
+enable_email_verification: true
+enable_anonymous_responses: false
+mock_external_services: false
+
+# Performance Settings
+max_request_size: 10485760
+request_timeout: 30
+keepalive_timeout: 65
+worker_connections: 1000
+rate_limit_enabled: true
+rate_limit_per_minute: 60
+
+# Monitoring & Alerting
+prometheus_enabled: true
+prometheus_port: 9090
+grafana_enabled: true
+grafana_port: 3000
+grafana_admin_user: admin
+grafana_admin_password: "{{ vault_prod_grafana_password }}"
+setup_alerts: true
+alert_email: devops@survey-platform.com
+slack_webhook_url: "{{ vault_prod_slack_webhook | default('') }}"
+
+# Logging
+log_path: /var/log/survey-platform
+log_retention_days: 90
+log_level: warning
+log_format: json
+sentry_dsn: "{{ vault_prod_sentry_dsn }}"
+enable_audit_logging: true
+
+# Backup Configuration
+backup_retention_days: 30
+backup_s3_bucket: survey-production-backups
+backup_s3_region: eu-central-1
+backup_s3_access_key: "{{ vault_prod_s3_access_key }}"
+backup_s3_secret_key: "{{ vault_prod_s3_secret_key }}"
+backup_encryption_enabled: true
+backup_schedule: "0 2 * * *"  # 2 AM daily
+
+# Cache Configuration
+cache_enabled: true
+cache_ttl_seconds: 3600
+redis_host: "{{ vault_prod_redis_host | default('localhost') }}"
+redis_port: 6379
+redis_password: "{{ vault_prod_redis_password | default('') }}"
+redis_maxmemory: 512mb
+redis_maxmemory_policy: allkeys-lru
+
+# Security
+fail2ban_enabled: true
+fail2ban_maxretry: 5
+fail2ban_bantime: 3600
+fail2ban_findtime: 600
+
+# WAF Configuration
+setup_waf: true
+modsecurity_enabled: true
+ddos_protection: true
+
+# High Availability
+setup_load_balancer: true
+setup_database_replication: true
+setup_redis_cluster: false
+
+# CDN Configuration
+cdn_enabled: true
+cdn_provider: cloudflare
+cdn_zone_id: "{{ vault_prod_cdn_zone_id | default('') }}"
+
+# Compliance & Security
+enforce_https: true
+hsts_enabled: true
+hsts_max_age: 31536000
+csp_enabled: true
+enable_security_headers: true
+
+# Auto-scaling Configuration
+autoscaling_enabled: false
+min_instances: 2
+max_instances: 10
+target_cpu_utilization: 70
+
+# Disaster Recovery
+dr_enabled: true
+dr_region: eu-west-1
+dr_sync_interval: 3600

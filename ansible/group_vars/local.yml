@@ -1,0 +1,73 @@
+---
+# Local Development Environment Configuration
+environment: local
+environment_name: "Local Development"
+
+# Application Settings
+app_workers: 1
+app_reload: true
+app_log_level: debug
+debug_mode: true
+hot_reload: true
+
+# Database Configuration
+db_host: localhost
+db_port: 5432
+db_name: survey_platform_local
+db_user: user
+db_password: password
+
+# No SSL for local development
+setup_ssl: false
+setup_nginx: false
+setup_firewall: false
+setup_monitoring: false
+setup_backup: false
+
+# Docker Configuration
+docker_network_name: survey_local_network
+docker_compose_env: development
+
+# API Configuration
+enable_api_docs: true
+enable_cors: true
+cors_origins:
+  - http://localhost:3000
+  - http://localhost:5173
+  - http://localhost:8080
+  - http://127.0.0.1:3000
+  - http://127.0.0.1:5173
+  - http://127.0.0.1:8080
+
+# Email Configuration (use local mail catcher)
+smtp_host: localhost
+smtp_port: 1025
+smtp_user: ""
+smtp_password: ""
+smtp_from_email: noreply@localhost
+emails_enabled: false
+
+# Feature Flags for Development
+enable_user_registration: true
+enable_password_recovery: true
+enable_email_verification: false
+enable_anonymous_responses: true
+mock_external_services: true
+
+# Performance Settings (optimized for development)
+max_request_size: 10485760
+request_timeout: 60
+worker_connections: 100
+
+# Logging
+log_path: /var/log/survey-platform-local
+log_retention_days: 7
+log_level: debug
+
+# Cache disabled for development
+cache_enabled: false
+
+# Development Tools
+install_dev_tools: true
+setup_debugger: true
+enable_profiling: true

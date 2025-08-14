@@ -1,0 +1,316 @@
+---
+- name: Deploy Survey Platform - Production Environment
+  hosts: production
+  become: yes
+  serial: "30%"  # Rolling deployment - 30% of servers at a time
+  max_fail_percentage: 20
+  
+  pre_tasks:
+    - name: Load production variables
+      include_vars: group_vars/production.yml
+    
+    - name: Verify deployment approval
+      pause:
+        prompt: "Are you sure you want to deploy to PRODUCTION? (yes/no)"
+      register: deploy_confirmation
+      run_once: true
+      when: require_confirmation | default(true)
+    
+    - name: Check deployment approval
+      fail:
+        msg: "Deployment cancelled by user"
+      when: 
+        - require_confirmation | default(true)
+        - deploy_confirmation.user_input != "yes"
+    
+    - name: Create pre-deployment backup
+      shell: |
+        timestamp=$(date +%Y%m%d_%H%M%S)
+        backup_file="/var/backups/prod_deploy_${timestamp}.sql.gz"
+        docker-compose -f {{ project_path }}/docker-compose.yml exec -T db \
+          pg_dump -U {{ db_user }} {{ db_name }} | gzip > ${backup_file}
+        aws s3 cp ${backup_file} s3://{{ backup_s3_bucket }}/emergency-backups/
+      delegate_to: "{{ groups['databases_primary'][0] }}"
+      run_once: true
+    
+    - name: Enable maintenance mode
+      uri:
+        url: "https://{{ nginx_server_name }}/api/v1/admin/maintenance"
+        method: POST
+        body_format: json
+        body:
+          enabled: true
+          message: "System maintenance in progress. We'll be back shortly."
+        headers:
+          Authorization: "Bearer {{ admin_api_token }}"
+      run_once: true
+      when: enable_maintenance_mode | default(true)
+  
+  roles:
+    - role: common
+      tags: ['common']
+    - role: security
+      tags: ['security']
+    - role: docker
+      tags: ['docker']
+    - role: database
+      tags: ['database']
+      when: inventory_hostname in groups['databases']
+    - role: redis
+      tags: ['redis']
+      when: inventory_hostname in groups['redis']
+    - role: application
+      tags: ['app']
+    - role: nginx
+      tags: ['nginx']
+      when: setup_nginx
+    - role: monitoring
+      tags: ['monitoring']
+      when: setup_monitoring
+    - role: backup
+      tags: ['backup']
+      when: setup_backup
+  
+  tasks:
+    - name: Canary deployment phase
+      block:
+        - name: Deploy to canary server
+          docker_container:
+            name: "survey-backend-canary"
+            image: "{{ docker_registry }}/survey:{{ docker_image_tag }}"
+            state: started
+            ports:
+              - "8002:8000"
+            env_file: "{{ project_path }}/.env"
+            networks:
+              - name: "{{ docker_network_name }}"
+          when: inventory_hostname == groups['production'][0]
+        
+        - name: Run canary health checks
+          uri:
+            url: "http://{{ hostvars[groups['production'][0]]['ansible_host'] }}:8002/health"
+            status_code: 200
+          retries: 10
+          delay: 5
+          delegate_to: localhost
+          run_once: true
+        
+        - name: Monitor canary metrics (5 minutes)
+          pause:
+            minutes: 5
+            prompt: "Monitoring canary deployment. Press Ctrl+C to abort if issues detected."
+          run_once: true
+        
+        - name: Check canary error rate
+          uri:
+            url: "http://{{ hostvars[groups['monitoring'][0]]['ansible_host'] }}:{{ prometheus_port }}/api/v1/query"
+            method: GET
+            body_format: json
+            body:
+              query: 'rate(http_requests_total{job="canary",status=~"5.."}[5m])'
+          register: canary_errors
+          run_once: true
+        
+        - name: Abort if high error rate
+          fail:
+            msg: "Canary deployment showing high error rate: {{ canary_errors.json.data.result[0].value[1] }}"
+          when: 
+            - canary_errors.json.data.result | length > 0
+            - canary_errors.json.data.result[0].value[1] | float > 0.01
+          run_once: true
+      when: canary_deployment | default(true)
+    
+    - name: Main deployment phase
+      block:
+        - name: Pull Docker images
+          docker_image:
+            name: "{{ docker_registry }}/survey:{{ docker_image_tag }}"
+            source: pull
+            force_source: yes
+        
+        - name: Stop load balancer health checks for this server
+          uri:
+            url: "http://{{ hostvars[groups['loadbalancers'][0]]['ansible_host'] }}/admin/server/{{ inventory_hostname }}/drain"
+            method: POST
+          delegate_to: localhost
+          when: inventory_hostname in groups['production']
+        
+        - name: Wait for connections to drain
+          pause:
+            seconds: 30
+        
+        - name: Deploy new container
+          docker_container:
+            name: "survey-backend"
+            image: "{{ docker_registry }}/survey:{{ docker_image_tag }}"
+            state: started
+            restart_policy: always
+            ports:
+              - "{{ app_port }}:8000"
+            env_file: "{{ project_path }}/.env"
+            networks:
+              - name: "{{ docker_network_name }}"
+            healthcheck:
+              test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+              interval: 30s
+              timeout: 10s
+              retries: 3
+        
+        - name: Wait for application to be healthy
+          uri:
+            url: "http://localhost:{{ app_port }}/health"
+            status_code: 200
+          retries: 20
+          delay: 10
+        
+        - name: Re-enable load balancer health checks
+          uri:
+            url: "http://{{ hostvars[groups['loadbalancers'][0]]['ansible_host'] }}/admin/server/{{ inventory_hostname }}/enable"
+            method: POST
+          delegate_to: localhost
+        
+        - name: Verify deployment on this server
+          uri:
+            url: "http://localhost:{{ app_port }}/api/v1/version"
+          register: local_version
+        
+        - name: Log deployment version
+          debug:
+            msg: "Server {{ inventory_hostname }} running version: {{ local_version.json.version }}"
+    
+    - name: Run database migrations (once)
+      docker_container:
+        name: migration-runner
+        image: "{{ docker_registry }}/survey:{{ docker_image_tag }}"
+        command: "poetry run alembic upgrade head"
+        env_file: "{{ project_path }}/.env"
+        networks:
+          - name: "{{ docker_network_name }}"
+        cleanup: yes
+        detach: no
+      run_once: true
+      delegate_to: "{{ groups['production'][0] }}"
+    
+    - name: Warm up cache
+      uri:
+        url: "https://{{ nginx_server_name }}/api/v1/{{ item }}"
+        method: GET
+      loop:
+        - "surveys"
+        - "organizations"
+        - "health"
+      run_once: true
+      ignore_errors: yes
+    
+    - name: Run production smoke tests
+      uri:
+        url: "https://{{ nginx_server_name }}/{{ item }}"
+        status_code: 200
+        validate_certs: yes
+      loop:
+        - "health"
+        - "api/v1/health"
+      run_once: true
+    
+    - name: Verify critical endpoints
+      uri:
+        url: "https://{{ nginx_server_name }}/api/v1/{{ item }}"
+        method: POST
+        body_format: json
+        body:
+          email: "test@example.com"
+          password: "test"
+        status_code: [401, 422]  # Expected to fail with auth error
+      loop:
+        - "auth/token"
+      run_once: true
+  
+  post_tasks:
+    - name: Disable maintenance mode
+      uri:
+        url: "https://{{ nginx_server_name }}/api/v1/admin/maintenance"
+        method: POST
+        body_format: json
+        body:
+          enabled: false
+        headers:
+          Authorization: "Bearer {{ admin_api_token }}"
+      run_once: true
+      when: enable_maintenance_mode | default(true)
+    
+    - name: Clear CDN cache
+      uri:
+        url: "https://api.cloudflare.com/client/v4/zones/{{ cdn_zone_id }}/purge_cache"
+        method: POST
+        body_format: json
+        body:
+          purge_everything: true
+        headers:
+          Authorization: "Bearer {{ cloudflare_api_token }}"
+      run_once: true
+      when: cdn_enabled and cdn_provider == "cloudflare"
+      ignore_errors: yes
+    
+    - name: Send deployment notification
+      uri:
+        url: "{{ slack_webhook_url }}"
+        method: POST
+        body_format: json
+        body:
+          text: "🚀 Production deployment completed successfully"
+          blocks:
+            - type: section
+              text:
+                type: mrkdwn
+                text: "*Production Deployment Complete*\n*Version:* {{ docker_image_tag }}\n*Servers:* {{ ansible_play_hosts | length }}\n*Time:* {{ ansible_date_time.iso8601 }}"
+      when: slack_webhook_url is defined and slack_webhook_url != ""
+      run_once: true
+      ignore_errors: yes
+    
+    - name: Create post-deployment backup
+      shell: |
+        timestamp=$(date +%Y%m%d_%H%M%S)
+        backup_file="/var/backups/prod_post_deploy_${timestamp}.sql.gz"
+        docker-compose -f {{ project_path }}/docker-compose.yml exec -T db \
+          pg_dump -U {{ db_user }} {{ db_name }} | gzip > ${backup_file}
+        aws s3 cp ${backup_file} s3://{{ backup_s3_bucket }}/post-deploy-backups/
+      delegate_to: "{{ groups['databases_primary'][0] }}"
+      run_once: true
+    
+    - name: Generate deployment report
+      template:
+        src: deployment-report.j2
+        dest: "/var/log/deployments/{{ ansible_date_time.epoch }}-report.txt"
+      delegate_to: localhost
+      run_once: true
+    
+    - name: Display deployment summary
+      debug:
+        msg:
+          - "==================== PRODUCTION DEPLOYMENT COMPLETE ===================="
+          - "Environment: {{ environment_name }}"
+          - "URL: https://{{ nginx_server_name }}"
+          - "Version: {{ docker_image_tag }}"
+          - "Deployed to: {{ ansible_play_hosts | length }} servers"
+          - "Deployment time: {{ ansible_date_time.iso8601 }}"
+          - "Status: ✅ SUCCESS"
+          - "========================================================================"
+      run_once: true
+  
+  handlers:
+    - name: reload nginx
+      systemd:
+        name: nginx
+        state: reloaded
+    
+    - name: restart docker
+      systemd:
+        name: docker
+        state: restarted
+    
+    - name: alert on failure
+      mail:
+        to: "{{ alert_email }}"
+        subject: "CRITICAL: Production deployment failed"
+        body: "Production deployment failed on {{ inventory_hostname }}. Please investigate immediately."
+      when: deployment_failed | default(false)

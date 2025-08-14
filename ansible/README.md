@@ -1,4 +1,4 @@
-# BVMW Survey Platform - Ansible Deployment
+# Survey Platform - Ansible Deployment
 
 ## Prerequisites
 
@@ -62,7 +62,7 @@ ansible-playbook -i inventory.ini playbook.yml
 ### With Custom Variables
 ```bash
 ansible-playbook -i inventory.ini playbook.yml \
-  -e "git_repository_url=https://github.com/yourusername/bvmw-survey.git" \
+  -e "git_repository_url=https://github.com/yourusername/survey-platform.git" \
   -e "git_branch=develop"
 ```
 
@@ -126,22 +126,22 @@ backup_s3_secret_key: "{{ vault_s3_secret_key }}"
 
 ### Check Service Status
 ```bash
-ansible all -i inventory.ini -m shell -a "systemctl status bvmw-survey"
+ansible all -i inventory.ini -m shell -a "systemctl status survey-platform"
 ```
 
 ### View Logs
 ```bash
-ansible all -i inventory.ini -m shell -a "docker-compose -f /opt/bvmw-survey/docker-compose.yml logs --tail=100"
+ansible all -i inventory.ini -m shell -a "docker-compose -f /opt/survey-platform/docker-compose.yml logs --tail=100"
 ```
 
 ### Restart Services
 ```bash
-ansible all -i inventory.ini -m shell -a "systemctl restart bvmw-survey"
+ansible all -i inventory.ini -m shell -a "systemctl restart survey-platform"
 ```
 
 ### Run Database Backup
 ```bash
-ansible all -i inventory.ini -m shell -a "/usr/local/bin/bvmw-backup"
+ansible all -i inventory.ini -m shell -a "/usr/local/bin/survey-backup"
 ```
 
 ## Troubleshooting
@@ -203,6 +203,6 @@ After successful deployment:
 ## Support
 
 For issues or questions, please check:
-- Application logs: `/var/log/bvmw-survey/`
+- Application logs: `/var/log/survey-platform/`
 - Docker logs: `docker-compose logs`
-- System logs: `journalctl -u bvmw-survey`
+- System logs: `journalctl -u survey-platform`

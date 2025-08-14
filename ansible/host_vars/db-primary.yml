@@ -1,0 +1,15 @@
+---
+# Primary Database Server
+database_role: primary
+postgresql_config:
+  max_connections: 300
+  shared_buffers: 1GB
+  effective_cache_size: 3GB
+  maintenance_work_mem: 512MB
+  wal_level: replica
+  max_wal_senders: 5
+  wal_keep_segments: 64
+  archive_mode: on
+  archive_command: 'test ! -f /var/backups/postgresql/archive/%f && cp %p /var/backups/postgresql/archive/%f'
+backup_schedule: "0 2 * * *"  # 2 AM daily
+enable_monitoring: true

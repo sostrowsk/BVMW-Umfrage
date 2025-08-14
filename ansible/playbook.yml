@@ -1,10 +1,10 @@
 ---
-- name: Setup BVMW Survey Platform
+- name: Setup Survey Platform
   hosts: all
   become: yes
   vars:
-    project_name: bvmw-survey-platform
-    project_path: /opt/bvmw-survey
+    project_name: survey-platform
+    project_path: /opt/survey-platform
     docker_compose_version: 2.23.3
     python_version: "3.11"
     postgres_version: "15"
@@ -99,7 +99,7 @@
     
     - name: Clone repository
       git:
-        repo: "{{ git_repository_url | default('https://github.com/yourusername/bvmw-survey.git') }}"
+        repo: "{{ git_repository_url | default('https://github.com/yourusername/survey-platform.git') }}"
         dest: "{{ project_path }}"
         version: "{{ git_branch | default('main') }}"
       become: no
@@ -134,7 +134,7 @@
     
     - name: Create Docker network
       docker_network:
-        name: bvmw_network
+        name: survey_network
     
     - name: Start Docker services
       docker_compose:
@@ -147,15 +147,15 @@
     - name: Create systemd service for Docker Compose
       template:
         src: docker-compose.service.j2
-        dest: /etc/systemd/system/bvmw-survey.service
+        dest: /etc/systemd/system/survey-platform.service
       notify:
         - Reload systemd
-        - Enable and start BVMW service
+        - Enable and start service
     
     - name: Setup log rotation
       template:
         src: logrotate.j2
-        dest: /etc/logrotate.d/bvmw-survey
+        dest: /etc/logrotate.d/survey-platform
     
     - name: Check if database needs initialization
       postgresql_query:
@@ -231,12 +231,12 @@
         - name: Create nginx configuration
           template:
             src: nginx.conf.j2
-            dest: /etc/nginx/sites-available/bvmw-survey
+            dest: /etc/nginx/sites-available/survey-platform
         
         - name: Enable nginx site
           file:
-            src: /etc/nginx/sites-available/bvmw-survey
-            dest: /etc/nginx/sites-enabled/bvmw-survey
+            src: /etc/nginx/sites-available/survey-platform
+            dest: /etc/nginx/sites-enabled/survey-platform
             state: link
         
         - name: Remove default nginx site
@@ -278,22 +278,22 @@
     - name: Create backup script
       template:
         src: backup.sh.j2
-        dest: /usr/local/bin/bvmw-backup
+        dest: /usr/local/bin/survey-backup
         mode: '0755'
       when: setup_backup | default(false)
     
     - name: Setup backup cron job
       cron:
-        name: "BVMW Survey backup"
+        name: "Survey backup"
         hour: "2"
         minute: "0"
-        job: "/usr/local/bin/bvmw-backup"
+        job: "/usr/local/bin/survey-backup"
       when: setup_backup | default(false)
     
     - name: Display deployment information
       debug:
         msg:
-          - "BVMW Survey Platform deployed successfully!"
+          - "Survey Platform deployed successfully!"
           - "Access the application at: http://{{ ansible_host }}:8000"
           - "API documentation: http://{{ ansible_host }}:8000/docs"
           - "Database: PostgreSQL on port 5432"
@@ -304,8 +304,8 @@
       systemd:
         daemon_reload: yes
     
-    - name: Enable and start BVMW service
+    - name: Enable and start service
       systemd:
-        name: bvmw-survey
+        name: survey-platform
         state: started
         enabled: yes

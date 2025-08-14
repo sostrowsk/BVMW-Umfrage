@@ -1,4 +1,4 @@
-upstream bvmw_backend {
+upstream survey_backend {
     server localhost:{{ app_port }};
 }
 
@@ -29,7 +29,7 @@ server {
     error_log {{ log_path }}/nginx_error.log;
 
     location / {
-        proxy_pass http://bvmw_backend;
+        proxy_pass http://survey_backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

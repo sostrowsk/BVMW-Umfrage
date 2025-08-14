@@ -1,5 +1,5 @@
 [Unit]
-Description=BVMW Survey Platform Docker Compose Application
+Description=Survey Platform Docker Compose Application
 Requires=docker.service
 After=docker.service network-online.target
 Wants=network-online.target
@@ -16,7 +16,7 @@ Restart=on-failure
 RestartSec=30s
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=bvmw-survey
+SyslogIdentifier=survey-platform
 User=root
 Group=docker
 
