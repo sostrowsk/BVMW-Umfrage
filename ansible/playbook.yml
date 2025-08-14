@@ -1,0 +1,311 @@
+---
+- name: Setup BVMW Survey Platform
+  hosts: all
+  become: yes
+  vars:
+    project_name: bvmw-survey-platform
+    project_path: /opt/bvmw-survey
+    docker_compose_version: 2.23.3
+    python_version: "3.11"
+    postgres_version: "15"
+    nodejs_version: "18"
+  
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+    
+    - name: Install system dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - git
+          - build-essential
+          - python3-pip
+          - python3-dev
+          - libpq-dev
+          - software-properties-common
+        state: present
+    
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+    
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+    
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+    
+    - name: Install Docker Compose
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_machine }}"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+    
+    - name: Add deadsnakes PPA for Python
+      apt_repository:
+        repo: ppa:deadsnakes/ppa
+        state: present
+    
+    - name: Install Python {{ python_version }}
+      apt:
+        name:
+          - python{{ python_version }}
+          - python{{ python_version }}-venv
+          - python{{ python_version }}-dev
+        state: present
+    
+    - name: Install Poetry
+      shell: |
+        curl -sSL https://install.python-poetry.org | python3 -
+      args:
+        creates: /home/{{ ansible_user }}/.local/bin/poetry
+      become: no
+    
+    - name: Add Poetry to PATH
+      lineinfile:
+        path: /home/{{ ansible_user }}/.bashrc
+        line: 'export PATH="$HOME/.local/bin:$PATH"'
+        state: present
+      become: no
+    
+    - name: Install PostgreSQL client
+      apt:
+        name:
+          - postgresql-client-{{ postgres_version }}
+        state: present
+    
+    - name: Create project directory
+      file:
+        path: "{{ project_path }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+    
+    - name: Clone repository
+      git:
+        repo: "{{ git_repository_url | default('https://github.com/yourusername/bvmw-survey.git') }}"
+        dest: "{{ project_path }}"
+        version: "{{ git_branch | default('main') }}"
+      become: no
+      when: git_repository_url is defined
+    
+    - name: Copy project files (if local deployment)
+      synchronize:
+        src: "../"
+        dest: "{{ project_path }}"
+        rsync_opts:
+          - "--exclude=.git"
+          - "--exclude=__pycache__"
+          - "--exclude=.pytest_cache"
+          - "--exclude=*.pyc"
+          - "--exclude=.env"
+          - "--exclude=postgres_data"
+      when: git_repository_url is not defined
+    
+    - name: Create .env file from template
+      template:
+        src: env.j2
+        dest: "{{ project_path }}/.env"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0600'
+    
+    - name: Install Python dependencies with Poetry
+      shell: |
+        cd {{ project_path }}
+        /home/{{ ansible_user }}/.local/bin/poetry install
+      become: no
+    
+    - name: Create Docker network
+      docker_network:
+        name: bvmw_network
+    
+    - name: Start Docker services
+      docker_compose:
+        project_src: "{{ project_path }}"
+        state: present
+        pull: yes
+      environment:
+        COMPOSE_PROJECT_NAME: "{{ project_name }}"
+    
+    - name: Create systemd service for Docker Compose
+      template:
+        src: docker-compose.service.j2
+        dest: /etc/systemd/system/bvmw-survey.service
+      notify:
+        - Reload systemd
+        - Enable and start BVMW service
+    
+    - name: Setup log rotation
+      template:
+        src: logrotate.j2
+        dest: /etc/logrotate.d/bvmw-survey
+    
+    - name: Check if database needs initialization
+      postgresql_query:
+        db: "{{ db_name }}"
+        query: "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'"
+        login_host: localhost
+        login_port: 5432
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+      register: tables_count
+      ignore_errors: yes
+    
+    - name: Initialize database if empty
+      shell: |
+        cd {{ project_path }}
+        docker-compose exec -T db psql -U {{ db_user }} -d {{ db_name }} < init.sql
+      when: tables_count.failed or (tables_count.query_result[0].count | int) == 0
+    
+    - name: Run database migrations
+      shell: |
+        cd {{ project_path }}
+        /home/{{ ansible_user }}/.local/bin/poetry run alembic upgrade head
+      become: no
+      when: use_alembic | default(false)
+    
+    - name: Create admin user
+      shell: |
+        cd {{ project_path }}
+        /home/{{ ansible_user }}/.local/bin/poetry run python -c "
+        from app.database import SessionLocal
+        from app.models import Member
+        from app.security import get_password_hash
+        db = SessionLocal()
+        admin = db.query(Member).filter_by(email='{{ admin_email }}').first()
+        if not admin:
+            admin = Member(
+                email='{{ admin_email }}',
+                hashed_password=get_password_hash('{{ admin_password }}'),
+                name='Admin User',
+                role='admin'
+            )
+            db.add(admin)
+            db.commit()
+        db.close()
+        "
+      become: no
+      when: create_admin_user | default(false)
+    
+    - name: Setup firewall rules
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "22"
+        - "80"
+        - "443"
+        - "8000"
+      when: setup_firewall | default(false)
+    
+    - name: Enable UFW
+      ufw:
+        state: enabled
+      when: setup_firewall | default(false)
+    
+    - name: Setup nginx reverse proxy
+      block:
+        - name: Install nginx
+          apt:
+            name: nginx
+            state: present
+        
+        - name: Create nginx configuration
+          template:
+            src: nginx.conf.j2
+            dest: /etc/nginx/sites-available/bvmw-survey
+        
+        - name: Enable nginx site
+          file:
+            src: /etc/nginx/sites-available/bvmw-survey
+            dest: /etc/nginx/sites-enabled/bvmw-survey
+            state: link
+        
+        - name: Remove default nginx site
+          file:
+            path: /etc/nginx/sites-enabled/default
+            state: absent
+        
+        - name: Test nginx configuration
+          command: nginx -t
+        
+        - name: Restart nginx
+          systemd:
+            name: nginx
+            state: restarted
+            enabled: yes
+      when: setup_nginx | default(false)
+    
+    - name: Install monitoring tools
+      block:
+        - name: Install monitoring packages
+          apt:
+            name:
+              - prometheus-node-exporter
+              - htop
+              - iotop
+              - netdata
+            state: present
+        
+        - name: Start monitoring services
+          systemd:
+            name: "{{ item }}"
+            state: started
+            enabled: yes
+          loop:
+            - prometheus-node-exporter
+            - netdata
+      when: setup_monitoring | default(false)
+    
+    - name: Create backup script
+      template:
+        src: backup.sh.j2
+        dest: /usr/local/bin/bvmw-backup
+        mode: '0755'
+      when: setup_backup | default(false)
+    
+    - name: Setup backup cron job
+      cron:
+        name: "BVMW Survey backup"
+        hour: "2"
+        minute: "0"
+        job: "/usr/local/bin/bvmw-backup"
+      when: setup_backup | default(false)
+    
+    - name: Display deployment information
+      debug:
+        msg:
+          - "BVMW Survey Platform deployed successfully!"
+          - "Access the application at: http://{{ ansible_host }}:8000"
+          - "API documentation: http://{{ ansible_host }}:8000/docs"
+          - "Database: PostgreSQL on port 5432"
+          - "Project path: {{ project_path }}"
+  
+  handlers:
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+    
+    - name: Enable and start BVMW service
+      systemd:
+        name: bvmw-survey
+        state: started
+        enabled: yes

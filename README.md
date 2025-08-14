@@ -5,29 +5,42 @@ This repository contains the backend service for the BVMW Member Engagement Surv
 ## Tech Stack
 
 - **Framework:** Python 3.11+ with FastAPI
-- **Database:** PostgreSQL
-- **Authentication:** JWT-based
+- **Database:** PostgreSQL 15
+- **Authentication:** JWT-based OAuth2
 - **Infrastructure:** Docker & Docker Compose
+- **Deployment:** Ansible automation
+- **Package Management:** Poetry
 
 ## Prerequisites
 
-To run this project, you will need:
+### For Docker Development
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
+
+### For Production Deployment
+- Ansible 2.14+
+- Python 3.8+ on control machine
+- SSH access to target servers
 
 ## Getting Started
 
 ### 1. Environment Configuration
 
-The application is configured via environment variables. For local development, the `docker-compose.yml` file sets a default `DATABASE_URL`. For production or customization, you can create a `.env` file in the project root. The application will automatically load it.
+Copy the example environment file and configure it:
 
-Example `.env` file:
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your configuration. Key variables:
 ```env
 DATABASE_URL=postgresql://user:password@db:5432/bvmw_survey
-SECRET_KEY=a_very_secure_and_random_secret_key
+SECRET_KEY=your-secret-key-here  # Generate with: openssl rand -hex 32
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
+
+See `.env.example` for all available configuration options.
 
 ### 2. Building and Running the Application
 
@@ -52,36 +65,169 @@ Once the application is running, interactive API documentation is automatically 
 
 These interfaces provide detailed information about all available endpoints, their parameters, and response models.
 
+## Production Deployment
+
+### Automated Deployment with Ansible
+
+The project includes comprehensive Ansible playbooks for automated deployment:
+
+```bash
+# Install Ansible dependencies
+ansible-galaxy install -r ansible/requirements.yml
+
+# Deploy to production
+ansible-playbook -i ansible/inventory.ini ansible/playbook.yml --limit production
+```
+
+Features included:
+- Automatic system setup (Docker, Python, PostgreSQL)
+- SSL/TLS with Let's Encrypt
+- Nginx reverse proxy
+- Automated backups
+- Monitoring with Prometheus/Grafana
+- Systemd service management
+
+See [ansible/README.md](ansible/README.md) for detailed deployment instructions.
+
 ## Testing
 
 The project uses `pytest` for unit and integration testing. Tests are configured in `tests/conftest.py` to use an isolated, in-memory SQLite database, which allows for fast execution without affecting the development database.
 
-To run the full test suite, use the following command:
+To run the full test suite:
 
 ```bash
+# Using Docker
 docker-compose run --rm backend poetry run pytest
+
+# Locally with Poetry
+poetry run pytest
+
+# With coverage report
+poetry run pytest --cov=app --cov-report=html
 ```
-This command executes `pytest` inside a temporary service container, ensuring the test environment is consistent and clean.
 
 ## Project Structure
 
 ```
 .
-├── app/                # Main application source code
-│   ├── core/           # Configuration and core settings
-│   ├── crud.py         # CRUD operations (database interaction logic)
-│   ├── database.py     # Database engine and session management
-│   ├── email.py        # Mock email service for development
-│   ├── main.py         # FastAPI application and API endpoints
-│   ├── models.py       # SQLAlchemy ORM database models
-│   ├── schemas.py      # Pydantic schemas for data validation
-│   └── security.py     # Authentication, hashing, and JWT logic
-├── tests/              # Application tests
-│   ├── conftest.py     # Pytest configuration and fixtures
-│   └── test_main.py    # Tests for the main API endpoints
+├── app/                    # Main application source code
+│   ├── core/              # Configuration and core settings
+│   │   ├── __init__.py
+│   │   └── config.py      # Pydantic settings management
+│   ├── crud.py            # CRUD operations (database interaction logic)
+│   ├── database.py        # Database engine and session management
+│   ├── email.py           # Mock email service for development
+│   ├── main.py            # FastAPI application and API endpoints
+│   ├── models.py          # SQLAlchemy ORM database models
+│   ├── schemas.py         # Pydantic schemas for data validation
+│   └── security.py        # Authentication, hashing, and JWT logic
+├── ansible/               # Deployment automation
+│   ├── playbook.yml       # Main Ansible playbook
+│   ├── inventory.ini      # Server inventory
+│   ├── requirements.yml   # Ansible dependencies
+│   ├── group_vars/        # Configuration variables
+│   │   └── all.yml        # Global variables
+│   └── templates/         # Jinja2 templates
+│       ├── env.j2         # Environment template
+│       ├── nginx.conf.j2  # Nginx configuration
+│       └── backup.sh.j2   # Backup script
+├── tests/                 # Application tests
+│   ├── conftest.py        # Pytest configuration and fixtures
+│   └── test_main.py       # Tests for the main API endpoints
+├── .env.example           # Environment variables template
 ├── .gitignore
-├── docker-compose.yml  # Docker Compose configuration for services
-├── init.sql            # Initial database schema script
-├── pyproject.toml      # Project metadata and dependencies (Poetry)
-└── README.md           # This file
+├── CLAUDE.md              # AI assistant instructions
+├── docker-compose.yml     # Docker Compose configuration
+├── Dockerfile             # Docker image definition
+├── init.sql               # Initial database schema
+├── poetry.lock            # Locked dependencies
+├── pyproject.toml         # Project metadata and dependencies
+└── README.md              # This file
 ```
+
+## API Endpoints
+
+### Authentication
+- `POST /api/v1/auth/token` - Login and receive JWT token
+- `POST /api/v1/auth/refresh` - Refresh access token
+
+### Organizations
+- `GET /api/v1/organizations` - List all organizations
+- `POST /api/v1/organizations` - Create new organization
+- `GET /api/v1/organizations/{id}` - Get organization details
+- `PUT /api/v1/organizations/{id}` - Update organization
+- `DELETE /api/v1/organizations/{id}` - Delete organization
+
+### Members
+- `GET /api/v1/members` - List all members
+- `POST /api/v1/members` - Create new member
+- `GET /api/v1/members/{id}` - Get member details
+- `PUT /api/v1/members/{id}` - Update member
+- `DELETE /api/v1/members/{id}` - Delete member
+
+### Surveys
+- `GET /api/v1/surveys` - List all surveys
+- `POST /api/v1/surveys` - Create new survey
+- `GET /api/v1/surveys/{id}` - Get survey details
+- `PUT /api/v1/surveys/{id}` - Update survey
+- `DELETE /api/v1/surveys/{id}` - Delete survey
+- `POST /api/v1/surveys/{id}/publish` - Publish survey
+
+### Survey Responses
+- `GET /api/v1/responses` - List all responses
+- `POST /api/v1/responses` - Submit survey response
+- `GET /api/v1/responses/{id}` - Get response details
+- `PUT /api/v1/responses/{id}` - Update response
+- `GET /api/v1/surveys/{id}/responses` - Get responses for a survey
+
+## Development Workflow
+
+### Local Development
+```bash
+# Install dependencies
+poetry install
+
+# Run development server
+poetry run uvicorn app.main:app --reload
+
+# Run tests
+poetry run pytest
+
+# Format code
+poetry run black .
+poetry run isort .
+
+# Lint code
+poetry run flake8
+```
+
+### Using Docker
+```bash
+# Build and start services
+docker-compose up --build
+
+# Run tests in container
+docker-compose run --rm backend poetry run pytest
+
+# View logs
+docker-compose logs -f backend
+
+# Execute commands in container
+docker-compose exec backend bash
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is proprietary software for BVMW (Bundesverband mittelständische Wirtschaft).
+
+## Support
+
+For issues or questions, please contact the development team or create an issue in the project repository.
