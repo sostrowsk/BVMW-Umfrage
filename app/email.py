@@ -1,6 +1,7 @@
 from pydantic import EmailStr
 from . import schemas
 
+
 def send_email(email_to: EmailStr, subject: str, body: str):
     """
     Mock function to "send" an email.
@@ -8,7 +9,7 @@ def send_email(email_to: EmailStr, subject: str, body: str):
     For the MVP, it just prints the would-be email to the console.
     """
     print("=" * 50)
-    print(f"MOCK EMAIL-SENDING-SERVICE")
+    print("MOCK EMAIL-SENDING-SERVICE")
     print("-" * 50)
     print(f"Recipient: {email_to}")
     print(f"Subject: {subject}")
@@ -17,6 +18,7 @@ def send_email(email_to: EmailStr, subject: str, body: str):
     print(body)
     print("=" * 50)
     print("Email successfully 'sent' to console.")
+
 
 def send_new_survey_notification(member: schemas.Member, survey: schemas.Survey):
     """

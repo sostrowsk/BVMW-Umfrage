@@ -1,13 +1,14 @@
-import uuid
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
 
+
 def test_read_root(client: TestClient):
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"message": "Welcome to the Survey API"}
+
 
 def test_create_and_login_user(client: TestClient, db_session: Session):
     # First, create an organization for the user
@@ -24,7 +25,7 @@ def test_create_and_login_user(client: TestClient, db_session: Session):
             "email": user_email,
             "password": user_password,
             "name": "Test User",
-            "organization_id": str(org.id)
+            "organization_id": str(org.id),
         },
     )
     assert response.status_code == 201
@@ -50,6 +51,7 @@ def test_create_and_login_user(client: TestClient, db_session: Session):
     )
     assert login_response_fail.status_code == 401
 
+
 def test_create_survey_unauthenticated(client: TestClient):
     response = client.post(
         "/api/v1/surveys",
@@ -57,14 +59,21 @@ def test_create_survey_unauthenticated(client: TestClient):
     )
     assert response.status_code == 401
 
+
 def test_create_and_get_survey_authenticated(client: TestClient, db_session: Session):
     # Create org and user
-    org = crud.create_organization(db_session, schemas.OrganizationCreate(name="AuthCorp"))
-    user_schema = schemas.MemberCreate(email="auth.user@authcorp.com", password="password", organization_id=org.id)
+    org = crud.create_organization(
+        db_session, schemas.OrganizationCreate(name="AuthCorp")
+    )
+    user_schema = schemas.MemberCreate(
+        email="auth.user@authcorp.com", password="password", organization_id=org.id
+    )
     user = crud.create_member(db_session, user_schema)
 
     # Get token
-    login_res = client.post("/api/v1/auth/token", data={"username": user.email, "password": "password"})
+    login_res = client.post(
+        "/api/v1/auth/token", data={"username": user.email, "password": "password"}
+    )
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -87,16 +96,23 @@ def test_create_and_get_survey_authenticated(client: TestClient, db_session: Ses
     assert get_res.status_code == 200
     assert get_res.json()["title"] == survey_title
 
+
 def test_submit_response(client: TestClient, db_session: Session):
     # Create org, user, survey
-    org = crud.create_organization(db_session, schemas.OrganizationCreate(name="ResponseCorp"))
-    user_schema = schemas.MemberCreate(email="resp.user@rescorp.com", password="password", organization_id=org.id)
+    org = crud.create_organization(
+        db_session, schemas.OrganizationCreate(name="ResponseCorp")
+    )
+    user_schema = schemas.MemberCreate(
+        email="resp.user@rescorp.com", password="password", organization_id=org.id
+    )
     user = crud.create_member(db_session, user_schema)
     survey_schema = schemas.SurveyCreate(title="Feedback Survey", config={})
     survey = crud.create_survey(db_session, survey_schema, creator_id=user.id)
 
     # Get token
-    login_res = client.post("/api/v1/auth/token", data={"username": user.email, "password": "password"})
+    login_res = client.post(
+        "/api/v1/auth/token", data={"username": user.email, "password": "password"}
+    )
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 

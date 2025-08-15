@@ -1,7 +1,8 @@
 import uuid
 from pydantic import BaseModel, EmailStr, ConfigDict
-from typing import List, Optional, Dict, Any
+from typing import Optional, Dict, Any
 from datetime import datetime, date
+
 
 # =============================================================================
 # Organization Schemas
@@ -12,13 +13,16 @@ class OrganizationBase(BaseModel):
     industry: Optional[str] = None
     membership_start_date: Optional[date] = None
 
+
 class OrganizationCreate(OrganizationBase):
     pass
+
 
 class Organization(OrganizationBase):
     id: uuid.UUID
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
 
 # =============================================================================
 # Member Schemas
@@ -29,9 +33,11 @@ class MemberBase(BaseModel):
     role: Optional[str] = None
     preferences: Optional[Dict[str, Any]] = None
 
+
 class MemberCreate(MemberBase):
     password: str
     organization_id: Optional[uuid.UUID] = None
+
 
 class Member(MemberBase):
     id: uuid.UUID
@@ -39,6 +45,7 @@ class Member(MemberBase):
     created_at: datetime
     organization: Optional[Organization] = None
     model_config = ConfigDict(from_attributes=True)
+
 
 # =============================================================================
 # Survey Schemas
@@ -48,8 +55,10 @@ class SurveyBase(BaseModel):
     description: Optional[str] = None
     config: Dict[str, Any]
 
+
 class SurveyCreate(SurveyBase):
     pass
+
 
 class Survey(SurveyBase):
     id: uuid.UUID
@@ -61,6 +70,7 @@ class Survey(SurveyBase):
     closed_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
+
 # =============================================================================
 # Survey Response Schemas
 # =============================================================================
@@ -68,10 +78,12 @@ class SurveyResponseBase(BaseModel):
     answers: Dict[str, Any]
     time_spent_seconds: Optional[int] = None
 
+
 class SurveyResponseCreate(SurveyResponseBase):
     # survey_id will be passed in the URL
     # member_id will be from the authenticated user
     pass
+
 
 class SurveyResponse(SurveyResponseBase):
     id: uuid.UUID
@@ -84,12 +96,14 @@ class SurveyResponse(SurveyResponseBase):
     meta: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(from_attributes=True)
 
+
 # =============================================================================
 # Token Schemas
 # =============================================================================
 class Token(BaseModel):
     access_token: str
     token_type: str
+
 
 class TokenData(BaseModel):
     email: Optional[str] = None

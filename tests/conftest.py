@@ -6,7 +6,6 @@ from sqlalchemy.pool import StaticPool
 
 from app.main import app, get_db
 from app.database import Base
-from app.core.config import settings
 
 # Use a separate database for testing (in-memory SQLite for simplicity and speed)
 # This avoids dependency on a running PostgreSQL server for tests.
@@ -18,6 +17,7 @@ engine = create_engine(
     poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 @pytest.fixture(scope="function")
 def db_session():
@@ -33,11 +33,13 @@ def db_session():
         db.close()
         Base.metadata.drop_all(bind=engine)
 
+
 @pytest.fixture(scope="function")
 def client(db_session):
     """
     Fixture to create a TestClient that uses the test database.
     """
+
     def override_get_db():
         try:
             yield db_session
