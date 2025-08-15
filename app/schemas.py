@@ -65,7 +65,7 @@ class Survey(SurveyBase):
     id: uuid.UUID
     version: str | None = None
     status: str
-    created_by_id: uuid.UUID | None = None
+    created_by: uuid.UUID | None = None
     created_at: datetime
     published_at: datetime | None = None
     closed_at: datetime | None = None

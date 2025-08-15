@@ -48,7 +48,7 @@ class Survey(Base):
     version = Column(String(10))
     config = Column(JSON, nullable=False)
     status = Column(String(50), default="draft")
-    created_by_id = Column(UUID(as_uuid=True), ForeignKey("members.id", ondelete="SET NULL"))
+    created_by = Column(UUID(as_uuid=True), ForeignKey("members.id", ondelete="SET NULL"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     published_at = Column(DateTime(timezone=True))
     closed_at = Column(DateTime(timezone=True))

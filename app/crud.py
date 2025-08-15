@@ -61,7 +61,7 @@ def get_surveys(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_survey(db: Session, survey: schemas.SurveyCreate, creator_id: uuid.UUID):
-    db_survey = models.Survey(**survey.model_dump(), created_by_id=creator_id)
+    db_survey = models.Survey(**survey.model_dump(), created_by=creator_id)
     db.add(db_survey)
     db.commit()
     db.refresh(db_survey)

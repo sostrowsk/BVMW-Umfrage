@@ -27,6 +27,7 @@ export interface Survey {
   created_at: string;
   published_at?: string;
   closed_at?: string;
+  responseCount?: number;
 }
 export interface SurveyResponse {
   id: string;
@@ -42,6 +43,7 @@ export interface SurveyResponse {
 }
 export interface SurveyConfig {
   questions: Question[];
+  estimatedTime?: number;
   settings?: {
     allowAnonymous?: boolean;
     multipleSubmissions?: boolean;

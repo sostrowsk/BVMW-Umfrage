@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Users,
@@ -8,6 +8,10 @@ import {
   Trash2,
   Mail,
   Building,
+  Shield,
+  UserCheck,
+  UserX,
+  Filter,
 } from "lucide-react";
 import {
   getMembers,
@@ -20,6 +24,8 @@ export default function Members() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<any>(null);
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const queryClient = useQueryClient();
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["members"],
@@ -45,157 +51,245 @@ export default function Members() {
       queryClient.invalidateQueries({ queryKey: ["members"] });
     },
   });
-  const filteredMembers = members.filter(
-    (member: any) =>
+  const filteredMembers = members.filter((member: any) => {
+    const matchesSearch = 
       member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.role?.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+      member.role?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === "all" || member.role === roleFilter;
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "active" ? member.isActive : !member.isActive);
+    return matchesSearch && matchesRole && matchesStatus;
+  });
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this member?")) {
+    if (confirm("Möchten Sie dieses Mitglied wirklich löschen?")) {
       deleteMutation.mutate(id);
     }
   };
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case "admin":
+        return <Shield className="h-4 w-4" />;
+      case "manager":
+        return <Users className="h-4 w-4" />;
+      default:
+        return <Users className="h-4 w-4" />;
+    }
+  };
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Users className="h-8 w-8 text-blue-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Members</h1>
-                <p className="text-gray-600">
-                  Manage organization members and their roles
-                </p>
+    <div className="px-4 sm:px-0">
+      <div className="sm:flex sm:items-center sm:justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Mitglieder
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Verwalten Sie Organisationsmitglieder und deren Rollen
+          </p>
+        </div>
+        <div className="mt-4 sm:mt-0">
+          <button
+            onClick={() => setShowForm(true)}
+            className="btn-primary"
+          >
+            <Plus className="h-5 w-5" />
+            Mitglied hinzufügen
+          </button>
+        </div>
+      </div>
+      <div className="card p-4 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="lg:col-span-2">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
               </div>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="input-field pl-10"
+                placeholder="Mitglieder suchen..."
+              />
             </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus className="h-5 w-5" />
-              Add Member
-            </button>
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search members..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div>
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="input-field pl-10 cursor-pointer"
+              >
+                <option value="all">Alle Rollen</option>
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="member">Mitglied</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="input-field cursor-pointer"
+            >
+              <option value="all">Alle Status</option>
+              <option value="active">Aktiv</option>
+              <option value="inactive">Inaktiv</option>
+            </select>
           </div>
         </div>
-        {isLoading ? (
-          <div className="flex items-center justify-center p-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
+          <p className="mt-4 text-sm text-gray-500">Lade Mitglieder...</p>
+        </div>
+      ) : filteredMembers.length === 0 ? (
+        <div className="card p-12 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+            <Users className="h-8 w-8 text-gray-400" />
           </div>
-        ) : filteredMembers.length === 0 ? (
-          <div className="text-center py-12">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No members found</p>
-          </div>
-        ) : (
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Keine Mitglieder gefunden
+          </h3>
+          <p className="text-gray-600 mb-6">
+            {searchTerm || roleFilter !== "all" || statusFilter !== "all"
+              ? "Versuchen Sie es mit anderen Filterkriterien."
+              : "Es sind noch keine Mitglieder vorhanden."}
+          </p>
+          {!searchTerm && roleFilter === "all" && statusFilter === "all" && (
+            <button
+              onClick={() => setShowForm(true)}
+              className="btn-primary"
+            >
+              <Plus className="h-5 w-5" />
+              Erstes Mitglied hinzufügen
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Mitglied
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    E-Mail
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Rolle
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Organization
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Organisation
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Aktionen
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200">
                 {filteredMembers.map((member: any) => (
-                  <tr key={member.id} className="hover:bg-gray-50">
+                  <tr 
+                    key={member.id} 
+                    className="hover:bg-gray-50 transition-all"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-blue-600 font-medium">
+                        <div className="flex-shrink-0 h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center">
+                          <span className="text-white font-semibold text-sm">
                             {member.name
                               ?.split(" ")
                               .map((n: string) => n[0])
-                              .join("") || "U"}
+                              .join("")
+                              .toUpperCase() || "U"}
                           </span>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {member.name || "Unnamed User"}
+                          <div className="text-sm font-medium text-gray-800">
+                            {member.name || "Unbenannter Benutzer"}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            ID: {member.id.slice(0, 8)}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 text-sm text-gray-900">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Mail className="h-4 w-4 text-gray-400" />
-                        {member.email}
+                        <span>{member.email}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
                           member.role === "admin"
                             ? "bg-purple-100 text-purple-800"
                             : member.role === "manager"
                               ? "bg-blue-100 text-blue-800"
-                              : "bg-gray-100 text-gray-800"
+                              : "bg-gray-100 text-gray-700"
                         }`}
                       >
-                        {member.role || "member"}
+                        {getRoleIcon(member.role || "member")}
+                        {member.role || "Mitglied"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {member.organization ? (
-                        <div className="flex items-center gap-2 text-sm text-gray-900">
+                        <div className="flex items-center gap-2 text-sm">
                           <Building className="h-4 w-4 text-gray-400" />
-                          {member.organization.name}
+                          <span className="text-gray-700">
+                            {member.organization.name}
+                          </span>
                         </div>
                       ) : (
-                        <span className="text-sm text-gray-500">
-                          No organization
+                        <span className="text-sm text-gray-500 italic">
+                          Keine Organisation
                         </span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
                           member.isActive
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
                         }`}
                       >
-                        {member.isActive ? "Active" : "Inactive"}
+                        {member.isActive ? (
+                          <>
+                            <UserCheck className="h-3 w-3" />
+                            Aktiv
+                          </>
+                        ) : (
+                          <>
+                            <UserX className="h-3 w-3" />
+                            Inaktiv
+                          </>
+                        )}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center gap-2">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => setEditingMember(member)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                          title="Bearbeiten"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(member.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                          title="Löschen"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -206,8 +300,8 @@ export default function Members() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
       {(showForm || editingMember) && (
         <MemberForm
           member={editingMember}

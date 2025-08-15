@@ -12,7 +12,14 @@ export default function MemberForm({
   onClose,
   onSubmit,
 }: MemberFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    password?: string;
+    role: string;
+    organizationId: string;
+    preferences: Record<string, any>;
+  }>({
     name: "",
     email: "",
     password: "",
