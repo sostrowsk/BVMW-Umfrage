@@ -123,8 +123,12 @@ const SurveyList: React.FC = () => {
         </div>
       ) : error ? (
         <div className="text-center py-12 card">
-          <p className="text-red-600 font-semibold">Fehler beim Laden der Umfragen</p>
-          <p className="text-sm text-red-500 mt-2">Bitte versuchen Sie es später erneut</p>
+          <p className="text-red-600 font-semibold">
+            Fehler beim Laden der Umfragen
+          </p>
+          <p className="text-sm text-red-500 mt-2">
+            Bitte versuchen Sie es später erneut
+          </p>
         </div>
       ) : filteredSurveys && filteredSurveys.length > 0 ? (
         viewMode === "grid" ? (
@@ -227,7 +231,8 @@ const SurveyList: React.FC = () => {
                           {survey.published_at && (
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              Veröffentlicht am {formatDate(survey.published_at)}
+                              Veröffentlicht am{" "}
+                              {formatDate(survey.published_at)}
                             </span>
                           )}
                           <span className="flex items-center gap-1">
@@ -257,19 +262,17 @@ const SurveyList: React.FC = () => {
               ? "Versuchen Sie es mit anderen Suchkriterien."
               : "Es sind noch keine Umfragen vorhanden."}
           </p>
-          {user?.role === "admin" &&
-            !searchTerm &&
-            statusFilter === "all" && (
-              <div className="mt-6">
-                <button
-                  onClick={() => navigate("/surveys/create")}
-                  className="btn-primary"
-                >
-                  <Plus className="mr-2 h-5 w-5" />
-                  Erste Umfrage erstellen
-                </button>
-              </div>
-            )}
+          {user?.role === "admin" && !searchTerm && statusFilter === "all" && (
+            <div className="mt-6">
+              <button
+                onClick={() => navigate("/surveys/create")}
+                className="btn-primary"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Erste Umfrage erstellen
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

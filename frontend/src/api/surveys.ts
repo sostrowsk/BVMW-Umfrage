@@ -20,7 +20,10 @@ export const createSurvey = async (data: SurveyCreate): Promise<Survey> => {
   const response = await axiosClient.post<Survey>("/surveys", data);
   return response.data;
 };
-export const updateSurvey = async (surveyId: string, data: Partial<SurveyCreate>): Promise<Survey> => {
+export const updateSurvey = async (
+  surveyId: string,
+  data: Partial<SurveyCreate>,
+): Promise<Survey> => {
   const response = await axiosClient.put<Survey>(`/surveys/${surveyId}`, data);
   return response.data;
 };
@@ -34,7 +37,9 @@ export const submitSurveyResponse = async (
   );
   return response.data;
 };
-export const getAnalytics = async (surveyId: string): Promise<SurveyAnalytics> => {
+export const getAnalytics = async (
+  surveyId: string,
+): Promise<SurveyAnalytics> => {
   const response = await axiosClient.get<SurveyAnalytics>(
     `/surveys/${surveyId}/analytics`,
   );

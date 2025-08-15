@@ -11,26 +11,23 @@ const Login: React.FC = () => {
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginCredentials>();
-  
+
   const onSubmit = async (data: LoginCredentials) => {
     try {
       setError(null);
       await login(data);
       navigate("/dashboard");
     } catch (err: any) {
-      setError(
-        err.response?.data?.detail ||
-        "Invalid credentials."
-      );
+      setError(err.response?.data?.detail || "Invalid credentials.");
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full animate-fadeIn">
@@ -38,7 +35,7 @@ const Login: React.FC = () => {
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
             Welcome Back
           </h2>
-          
+
           <form onSubmit={handleSubmit(onSubmit)}>
             <InputField
               id="email"
@@ -55,7 +52,7 @@ const Login: React.FC = () => {
                 },
               })}
             />
-            
+
             <div className="mb-6 relative">
               <InputField
                 id="password"
@@ -80,7 +77,7 @@ const Login: React.FC = () => {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            
+
             <Button
               type="submit"
               fullWidth
@@ -90,15 +87,13 @@ const Login: React.FC = () => {
               {isSubmitting ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          
+
           {error && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-600 text-sm text-center">
-                {error}
-              </p>
+              <p className="text-red-600 text-sm text-center">{error}</p>
             </div>
           )}
-          
+
           <div className="mt-6 text-center">
             <p className="text-gray-600 text-sm">
               Don't have an account?{" "}

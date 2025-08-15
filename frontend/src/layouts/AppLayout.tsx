@@ -4,14 +4,7 @@ import { useAuth } from "../features/auth/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import Sidebar from "../components/Sidebar";
-import {
-  LogOut,
-  User,
-  Search,
-  Globe,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { LogOut, User, Search, Globe, Moon, Sun } from "lucide-react";
 
 const AppLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -19,12 +12,12 @@ const AppLayout: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
+
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <header className="sticky top-0 z-40 border-b border-gray-200/70 bg-white/80 backdrop-blur dark:bg-gray-900/80 dark:border-gray-800">
@@ -69,7 +62,10 @@ const AppLayout: React.FC = () => {
               </button>
               <div className="hidden sm:flex items-center gap-2">
                 <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                  <User size={16} className="text-gray-600 dark:text-gray-300" />
+                  <User
+                    size={16}
+                    className="text-gray-600 dark:text-gray-300"
+                  />
                 </div>
                 <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
                   {user.email}

@@ -52,11 +52,12 @@ export default function Organizations() {
     },
   });
   const filteredOrganizations = organizations.filter((org: any) => {
-    const matchesSearch = 
+    const matchesSearch =
       org.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       org.industry?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSize = sizeFilter === "all" || org.sizeCategory === sizeFilter;
-    const matchesIndustry = industryFilter === "all" || org.industry === industryFilter;
+    const matchesIndustry =
+      industryFilter === "all" || org.industry === industryFilter;
     return matchesSearch && matchesSize && matchesIndustry;
   });
   const handleDelete = (id: string) => {
@@ -96,23 +97,20 @@ export default function Organizations() {
         return category;
     }
   };
-  const uniqueIndustries = Array.from(new Set(organizations.map((org: any) => org.industry).filter(Boolean)));
+  const uniqueIndustries = Array.from(
+    new Set(organizations.map((org: any) => org.industry).filter(Boolean)),
+  );
   return (
     <div className="px-4 sm:px-0">
       <div className="sm:flex sm:items-center sm:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">
-            Organisationen
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-800">Organisationen</h1>
           <p className="mt-2 text-gray-600">
             Verwalten Sie teilnehmende Organisationen
           </p>
         </div>
         <div className="mt-4 sm:mt-0">
-          <button
-            onClick={() => setShowForm(true)}
-            className="btn-primary"
-          >
+          <button onClick={() => setShowForm(true)} className="btn-primary">
             <Plus className="h-5 w-5" />
             Organisation hinzufügen
           </button>
@@ -185,10 +183,7 @@ export default function Organizations() {
               : "Es sind noch keine Organisationen vorhanden."}
           </p>
           {!searchTerm && sizeFilter === "all" && industryFilter === "all" && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="btn-primary"
-            >
+            <button onClick={() => setShowForm(true)} className="btn-primary">
               <Plus className="h-5 w-5" />
               Erste Organisation hinzufügen
             </button>
@@ -249,7 +244,8 @@ export default function Organizations() {
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Award className="h-4 w-4 text-gray-400" />
                     <span>
-                      Mitglied seit {new Date(org.membershipStartDate).getFullYear()}
+                      Mitglied seit{" "}
+                      {new Date(org.membershipStartDate).getFullYear()}
                     </span>
                   </div>
                 )}

@@ -73,7 +73,9 @@ export default function SurveyDetail() {
             rows={question.type === "textarea" ? 3 : undefined}
             required={question.required}
             value={responses[question.id] || ""}
-            onChange={(e) => handleInputChange(question.id, (e.target as any).value)}
+            onChange={(e) =>
+              handleInputChange(question.id, (e.target as any).value)
+            }
             placeholder="Enter your answer..."
           />
         );
@@ -108,7 +110,9 @@ export default function SurveyDetail() {
                   required={question.required}
                   className="mr-3 text-blue-600"
                   checked={responses[question.id] === option.value}
-                  onChange={(e) => handleInputChange(question.id, e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(question.id, e.target.value)
+                  }
                 />
                 <span className="text-gray-700">{option.label}</span>
               </label>
@@ -127,7 +131,9 @@ export default function SurveyDetail() {
                   type="checkbox"
                   value={option.value}
                   className="mr-3 text-blue-600 rounded"
-                  checked={responses[question.id]?.includes(option.value) || false}
+                  checked={
+                    responses[question.id]?.includes(option.value) || false
+                  }
                   onChange={(e) => {
                     const currentValues = responses[question.id] || [];
                     const newValues = e.target.checked
@@ -202,7 +208,9 @@ export default function SurveyDetail() {
       </button>
       <Card className="p-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">{survey.title}</h2>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">
+            {survey.title}
+          </h2>
           <p className="text-gray-600 mb-6">
             {survey.description || "Please answer the following questions"}
           </p>
@@ -225,10 +233,14 @@ export default function SurveyDetail() {
             <div key={question.id} className="mb-6">
               <label className="block text-gray-700 font-bold mb-3">
                 {question.text}
-                {question.required && <span className="text-red-500 ml-1">*</span>}
+                {question.required && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
               </label>
               {question.description && (
-                <p className="text-sm text-gray-600 mb-3">{question.description}</p>
+                <p className="text-sm text-gray-600 mb-3">
+                  {question.description}
+                </p>
               )}
               {renderQuestion(question, index)}
             </div>

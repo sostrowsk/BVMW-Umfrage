@@ -30,8 +30,7 @@ const Register: React.FC = () => {
       navigate("/dashboard");
     } catch (err: any) {
       setError(
-        err.response?.data?.detail ||
-        "Registration failed. Please try again."
+        err.response?.data?.detail || "Registration failed. Please try again.",
       );
     }
   };

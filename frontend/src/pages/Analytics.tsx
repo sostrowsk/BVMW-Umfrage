@@ -131,8 +131,14 @@ export default function Analytics() {
                 <div className={`p-2 ${stat.bgColor} rounded-lg`}>
                   <Icon className={`h-5 w-5 ${stat.iconColor}`} />
                 </div>
-                <div className={`flex items-center gap-1 text-xs font-semibold ${stat.trendUp ? 'text-green-600' : 'text-red-600'}`}>
-                  {stat.trendUp ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                <div
+                  className={`flex items-center gap-1 text-xs font-semibold ${stat.trendUp ? "text-green-600" : "text-red-600"}`}
+                >
+                  {stat.trendUp ? (
+                    <ArrowUp className="h-3 w-3" />
+                  ) : (
+                    <ArrowDown className="h-3 w-3" />
+                  )}
                   {stat.trend}
                 </div>
               </div>
@@ -160,11 +166,11 @@ export default function Analytics() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
               <YAxis stroke="#9ca3af" fontSize={12} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "8px",
                 }}
               />
               <Legend />
@@ -173,7 +179,7 @@ export default function Analytics() {
                 dataKey="responses"
                 stroke="#3B82F6"
                 strokeWidth={3}
-                dot={{ fill: '#3B82F6', r: 4 }}
+                dot={{ fill: "#3B82F6", r: 4 }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>
@@ -190,24 +196,32 @@ export default function Analytics() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="title" stroke="#9ca3af" fontSize={12} />
               <YAxis stroke="#9ca3af" fontSize={12} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "8px",
                 }}
               />
               <Legend />
-              <Bar dataKey="responses" fill="url(#colorGradient1)" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="completionRate" fill="url(#colorGradient2)" radius={[8, 8, 0, 0]} />
+              <Bar
+                dataKey="responses"
+                fill="url(#colorGradient1)"
+                radius={[8, 8, 0, 0]}
+              />
+              <Bar
+                dataKey="completionRate"
+                fill="url(#colorGradient2)"
+                radius={[8, 8, 0, 0]}
+              />
               <defs>
                 <linearGradient id="colorGradient1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10B981" stopOpacity={1}/>
-                  <stop offset="100%" stopColor="#059669" stopOpacity={1}/>
+                  <stop offset="0%" stopColor="#10B981" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#059669" stopOpacity={1} />
                 </linearGradient>
                 <linearGradient id="colorGradient2" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#F59E0B" stopOpacity={1}/>
-                  <stop offset="100%" stopColor="#D97706" stopOpacity={1}/>
+                  <stop offset="0%" stopColor="#F59E0B" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#D97706" stopOpacity={1} />
                 </linearGradient>
               </defs>
             </BarChart>
@@ -242,11 +256,11 @@ export default function Analytics() {
                   />
                 ))}
               </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "8px",
                 }}
               />
             </PieChart>
@@ -264,18 +278,22 @@ export default function Analytics() {
                 key={index}
                 className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all"
               >
-                <div className={`w-2 h-10 rounded-full ${
-                  activity.type === "response"
-                    ? "bg-green-500"
-                    : activity.type === "survey"
-                      ? "bg-blue-500"
-                      : "bg-gray-400"
-                }`} />
+                <div
+                  className={`w-2 h-10 rounded-full ${
+                    activity.type === "response"
+                      ? "bg-green-500"
+                      : activity.type === "survey"
+                        ? "bg-blue-500"
+                        : "bg-gray-400"
+                  }`}
+                />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-800">
                     {activity.description}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">{activity.timestamp}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {activity.timestamp}
+                  </p>
                 </div>
               </div>
             )) || (
@@ -283,7 +301,9 @@ export default function Analytics() {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
                   <Activity className="h-6 w-6 text-gray-400" />
                 </div>
-                <p className="text-gray-500 text-sm">Keine aktuellen Aktivitäten</p>
+                <p className="text-gray-500 text-sm">
+                  Keine aktuellen Aktivitäten
+                </p>
               </div>
             )}
           </div>
@@ -291,9 +311,7 @@ export default function Analytics() {
       </div>
       <div className="card p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">
-            Top-Umfragen
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-800">Top-Umfragen</h2>
           <span className="text-sm text-gray-500">Nach Performance</span>
         </div>
         <div className="overflow-x-auto">
@@ -319,10 +337,7 @@ export default function Analytics() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {analytics?.topSurveys?.map((survey: any) => (
-                <tr 
-                  key={survey.id} 
-                  className="hover:bg-gray-50 transition-all"
-                >
+                <tr key={survey.id} className="hover:bg-gray-50 transition-all">
                   <td className="px-4 py-4">
                     <span className="font-medium text-gray-800">
                       {survey.title}
@@ -372,14 +387,13 @@ export default function Analytics() {
                 </tr>
               )) || (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-4 py-12 text-center"
-                  >
+                  <td colSpan={5} className="px-4 py-12 text-center">
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
                       <FileText className="h-6 w-6 text-gray-400" />
                     </div>
-                    <p className="text-gray-500">Keine Umfragedaten verfügbar</p>
+                    <p className="text-gray-500">
+                      Keine Umfragedaten verfügbar
+                    </p>
                   </td>
                 </tr>
               )}

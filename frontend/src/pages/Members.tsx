@@ -52,12 +52,13 @@ export default function Members() {
     },
   });
   const filteredMembers = members.filter((member: any) => {
-    const matchesSearch = 
+    const matchesSearch =
       member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.role?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === "all" || member.role === roleFilter;
-    const matchesStatus = statusFilter === "all" || 
+    const matchesStatus =
+      statusFilter === "all" ||
       (statusFilter === "active" ? member.isActive : !member.isActive);
     return matchesSearch && matchesRole && matchesStatus;
   });
@@ -80,18 +81,13 @@ export default function Members() {
     <div className="px-4 sm:px-0">
       <div className="sm:flex sm:items-center sm:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">
-            Mitglieder
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-800">Mitglieder</h1>
           <p className="mt-2 text-gray-600">
             Verwalten Sie Organisationsmitglieder und deren Rollen
           </p>
         </div>
         <div className="mt-4 sm:mt-0">
-          <button
-            onClick={() => setShowForm(true)}
-            className="btn-primary"
-          >
+          <button onClick={() => setShowForm(true)} className="btn-primary">
             <Plus className="h-5 w-5" />
             Mitglied hinzufügen
           </button>
@@ -160,10 +156,7 @@ export default function Members() {
               : "Es sind noch keine Mitglieder vorhanden."}
           </p>
           {!searchTerm && roleFilter === "all" && statusFilter === "all" && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="btn-primary"
-            >
+            <button onClick={() => setShowForm(true)} className="btn-primary">
               <Plus className="h-5 w-5" />
               Erstes Mitglied hinzufügen
             </button>
@@ -197,8 +190,8 @@ export default function Members() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredMembers.map((member: any) => (
-                  <tr 
-                    key={member.id} 
+                  <tr
+                    key={member.id}
                     className="hover:bg-gray-50 transition-all"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">

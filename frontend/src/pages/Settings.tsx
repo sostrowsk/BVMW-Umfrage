@@ -109,7 +109,7 @@ const Settings: React.FC = () => {
                   Connect
                 </button>
               </div>
-            )
+            ),
           )}
         </div>
       </Card>

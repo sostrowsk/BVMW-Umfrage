@@ -1,5 +1,6 @@
 import React from "react";
-interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
+interface InputFieldProps
+  extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
   id: string;
   label?: string;
   type?: string;
@@ -7,7 +8,7 @@ interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement | H
   helperText?: string;
   rows?: number;
 }
-const InputField: React.FC<InputFieldProps> = ({ 
+const InputField: React.FC<InputFieldProps> = ({
   id,
   label,
   type = "text",
@@ -21,11 +22,14 @@ const InputField: React.FC<InputFieldProps> = ({
   const inputClasses = `w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow ${
     error ? "border-red-300 focus:ring-red-500" : "border-gray-300"
   } ${className}`;
-  
+
   return (
     <div className="mb-4">
       {label && (
-        <label htmlFor={id} className="block text-gray-700 text-sm font-bold mb-2">
+        <label
+          htmlFor={id}
+          className="block text-gray-700 text-sm font-bold mb-2"
+        >
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -47,9 +51,7 @@ const InputField: React.FC<InputFieldProps> = ({
           {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
         />
       )}
-      {error && (
-        <p className="text-red-500 text-sm mt-1">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
       {helperText && !error && (
         <p className="text-gray-500 text-sm mt-1">{helperText}</p>
       )}

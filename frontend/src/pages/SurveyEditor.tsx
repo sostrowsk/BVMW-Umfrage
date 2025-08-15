@@ -1,7 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Trash2, GripVertical, Save, Copy, Sparkles, FileText, ArrowLeft, HelpCircle, Clock } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  GripVertical,
+  Save,
+  Copy,
+  Sparkles,
+  FileText,
+  ArrowLeft,
+  HelpCircle,
+  Clock,
+} from "lucide-react";
 import { getSurvey, createSurvey, updateSurvey } from "../api/surveys";
 interface Question {
   id: string;
@@ -41,7 +52,8 @@ export default function SurveyEditor() {
         status: existingSurvey.status,
         config: {
           estimatedTime: existingSurvey.config.estimatedTime || 10,
-          allowAnonymous: existingSurvey.config.settings?.allowAnonymous || false,
+          allowAnonymous:
+            existingSurvey.config.settings?.allowAnonymous || false,
           requiresAuth: true,
           questions: existingSurvey.config.questions as Question[],
         },
@@ -129,7 +141,7 @@ export default function SurveyEditor() {
         },
       },
     };
-    
+
     if (isEditing) {
       updateMutation.mutate(dataToSubmit);
     } else {
@@ -156,7 +168,9 @@ export default function SurveyEditor() {
           {isEditing ? "Umfrage bearbeiten" : "Neue Umfrage erstellen"}
         </h1>
         <p className="mt-3 text-lg text-gray-600">
-          {isEditing ? "Bearbeiten Sie die Details und Fragen Ihrer Umfrage." : "Erstellen Sie eine neue Umfrage mit benutzerdefinierten Fragen."}
+          {isEditing
+            ? "Bearbeiten Sie die Details und Fragen Ihrer Umfrage."
+            : "Erstellen Sie eine neue Umfrage mit benutzerdefinierten Fragen."}
         </p>
       </div>
       <div className="card-modern p-8">
@@ -166,8 +180,12 @@ export default function SurveyEditor() {
               <FileText className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Umfragedetails</h2>
-              <p className="text-sm text-gray-600">Grundlegende Informationen über Ihre Umfrage</p>
+              <h2 className="text-xl font-bold text-gray-900">
+                Umfragedetails
+              </h2>
+              <p className="text-sm text-gray-600">
+                Grundlegende Informationen über Ihre Umfrage
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -182,7 +200,7 @@ export default function SurveyEditor() {
               disabled={createMutation.isPending || updateMutation.isPending}
               className="btn-primary"
             >
-              {(createMutation.isPending || updateMutation.isPending) ? (
+              {createMutation.isPending || updateMutation.isPending ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
                   <span>Speichern...</span>
@@ -288,7 +306,9 @@ export default function SurveyEditor() {
                       })
                     }
                   />
-                  <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">Anonyme Teilnahme erlauben</span>
+                  <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
+                    Anonyme Teilnahme erlauben
+                  </span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer group">
                   <input
@@ -305,7 +325,9 @@ export default function SurveyEditor() {
                       })
                     }
                   />
-                  <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">Authentifizierung erforderlich</span>
+                  <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
+                    Authentifizierung erforderlich
+                  </span>
                 </label>
               </div>
             </div>
@@ -320,13 +342,12 @@ export default function SurveyEditor() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">Fragen</h2>
-              <p className="text-sm text-gray-600">Fügen Sie Fragen zu Ihrer Umfrage hinzu</p>
+              <p className="text-sm text-gray-600">
+                Fügen Sie Fragen zu Ihrer Umfrage hinzu
+              </p>
             </div>
           </div>
-          <button
-            onClick={addQuestion}
-            className="btn-primary"
-          >
+          <button onClick={addQuestion} className="btn-primary">
             <Plus className="h-4 w-4" />
             Frage hinzufügen
           </button>
@@ -399,9 +420,7 @@ export default function SurveyEditor() {
                             className="flex-1 input-modern py-2"
                             value={option.label}
                             onChange={(e) => {
-                              const newOptions = [
-                                ...(question.options || []),
-                              ];
+                              const newOptions = [...(question.options || [])];
                               newOptions[optIndex] = {
                                 ...option,
                                 label: e.target.value,
@@ -445,7 +464,9 @@ export default function SurveyEditor() {
                       </label>
                       <div className="flex items-center gap-4">
                         <div>
-                          <label className="text-xs text-gray-600 mb-1 block">Minimum</label>
+                          <label className="text-xs text-gray-600 mb-1 block">
+                            Minimum
+                          </label>
                           <input
                             type="number"
                             className="w-20 input-field py-1.5 text-sm"
@@ -459,7 +480,9 @@ export default function SurveyEditor() {
                         </div>
                         <span className="text-gray-400">bis</span>
                         <div>
-                          <label className="text-xs text-gray-600 mb-1 block">Maximum</label>
+                          <label className="text-xs text-gray-600 mb-1 block">
+                            Maximum
+                          </label>
                           <input
                             type="number"
                             className="w-20 input-field py-1.5 text-sm"
@@ -486,7 +509,9 @@ export default function SurveyEditor() {
                           })
                         }
                       />
-                      <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">Pflichtfeld</span>
+                      <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
+                        Pflichtfeld
+                      </span>
                     </label>
                     <div className="flex items-center gap-2">
                       <button
@@ -514,11 +539,10 @@ export default function SurveyEditor() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mb-4">
                 <HelpCircle className="h-8 w-8 text-gray-500" />
               </div>
-              <p className="text-gray-600 font-medium mb-4">Noch keine Fragen hinzugefügt</p>
-              <button
-                onClick={addQuestion}
-                className="btn-primary"
-              >
+              <p className="text-gray-600 font-medium mb-4">
+                Noch keine Fragen hinzugefügt
+              </p>
+              <button onClick={addQuestion} className="btn-primary">
                 <Plus className="h-4 w-4" />
                 Erste Frage hinzufügen
               </button>

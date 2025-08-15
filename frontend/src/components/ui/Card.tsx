@@ -5,17 +5,22 @@ interface CardProps {
   onClick?: () => void;
   hover?: boolean;
 }
-const Card: React.FC<CardProps> = ({ 
-  children, 
-  className = "", 
+const Card: React.FC<CardProps> = ({
+  children,
+  className = "",
   onClick,
-  hover = true 
+  hover = true,
 }) => {
-  const hoverClass = hover && onClick ? "hover:shadow-lg hover:-translate-y-1" : hover ? "hover:shadow-lg" : "";
+  const hoverClass =
+    hover && onClick
+      ? "hover:shadow-lg hover:-translate-y-1"
+      : hover
+        ? "hover:shadow-lg"
+        : "";
   const cursorClass = onClick ? "cursor-pointer" : "";
-  
+
   return (
-    <div 
+    <div
       className={`bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 ${hoverClass} ${cursorClass} ${className}`}
       onClick={onClick}
     >
