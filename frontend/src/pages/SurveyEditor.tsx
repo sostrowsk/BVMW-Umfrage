@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import {
-  Plus,
-  Trash2,
-  GripVertical,
-  Save,
-  Copy,
-} from "lucide-react";
+import { Plus, Trash2, GripVertical, Save, Copy } from "lucide-react";
 import { getSurvey, createSurvey, updateSurvey } from "../api/surveys";
 interface Question {
   id: string;

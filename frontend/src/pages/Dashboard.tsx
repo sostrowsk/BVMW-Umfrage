@@ -3,13 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { surveysApi } from "../api/surveys";
 import { useAuth } from "../features/auth/AuthContext";
-import {
-  FileText,
-  BarChart,
-  Clock,
-  ArrowRight,
-  Plus,
-} from "lucide-react";
+import { FileText, BarChart, Clock, ArrowRight, Plus } from "lucide-react";
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
