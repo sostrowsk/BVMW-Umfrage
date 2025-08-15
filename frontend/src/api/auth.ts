@@ -1,5 +1,5 @@
 import axiosClient from "./client";
-import { LoginCredentials, Token, Member, MemberCreate } from "../types";
+import type { LoginCredentials, Token, Member, MemberCreate } from "../types";
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<Token> => {
     const formData = new FormData();

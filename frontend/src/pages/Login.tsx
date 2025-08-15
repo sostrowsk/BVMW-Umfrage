@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../features/auth/AuthContext";
-import { LoginCredentials } from "../types";
+import type { LoginCredentials } from "../types";
 import { LogIn, Mail, Lock, AlertCircle } from "lucide-react";
 const Login: React.FC = () => {
   const navigate = useNavigate();

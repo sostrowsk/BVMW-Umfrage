@@ -3,9 +3,9 @@ import React, {
   useContext,
   useState,
   useEffect,
-  ReactNode,
+  type ReactNode,
 } from "react";
-import { Member, LoginCredentials } from "../../types";
+import type { Member, LoginCredentials } from "../../types";
 import { authApi } from "../../api/auth";
 interface AuthContextType {
   user: Member | null;

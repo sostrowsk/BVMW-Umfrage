@@ -11,7 +11,7 @@ import {
   Calendar,
   ChevronRight,
 } from "lucide-react";
-import { Survey } from "../types";
+import type { Survey } from "../types";
 const SurveyList: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
