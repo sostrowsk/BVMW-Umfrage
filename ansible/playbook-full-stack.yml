@@ -153,11 +153,11 @@
         mode: '0600'
     
     - name: Build and start backend with Docker Compose
-      docker_compose:
-        project_src: "{{ backend_path }}"
-        state: present
-        build: yes
-        recreate: "{{ force_recreate | default('no') }}"
+      shell: |
+        docker compose build
+        docker compose up -d{% if force_recreate | default(false) %} --force-recreate{% endif %}
+      args:
+        chdir: "{{ backend_path }}"
       environment:
         COMPOSE_PROJECT_NAME: "{{ project_name }}_backend"
     

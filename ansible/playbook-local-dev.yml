@@ -1,0 +1,147 @@
+---
+- name: Local Development Setup (No Sudo Required)
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: yes
+  vars:
+    project_name: survey-platform
+    project_path: "{{ playbook_dir }}/.."
+    backend_path: "{{ project_path }}"
+    frontend_path: "{{ project_path }}/frontend"
+    environment: local
+    
+  tasks:
+    - name: Check Docker installation
+      command: docker --version
+      register: docker_check
+      changed_when: false
+      failed_when: false
+    
+    - name: Check Docker Compose installation
+      command: docker compose version
+      register: docker_compose_check
+      changed_when: false
+      failed_when: false
+    
+    - name: Display Docker status
+      debug:
+        msg:
+          - "Docker: {{ docker_check.stdout | default('Not installed') }}"
+          - "Docker Compose: {{ docker_compose_check.stdout | default('Not installed') }}"
+    
+    - name: Ensure Docker and Docker Compose are installed
+      fail:
+        msg: "Docker and Docker Compose must be installed. Please install them first."
+      when: docker_check.rc != 0 or docker_compose_check.rc != 0
+    
+    - name: Check if .env file exists
+      stat:
+        path: "{{ backend_path }}/.env"
+      register: env_file
+    
+    - name: Create .env file from example if it doesn't exist
+      copy:
+        src: "{{ backend_path }}/.env.example"
+        dest: "{{ backend_path }}/.env"
+        mode: '0600'
+      when: not env_file.stat.exists
+    
+    - name: Check if Poetry is installed
+      command: poetry --version
+      register: poetry_check
+      changed_when: false
+      failed_when: false
+    
+    - name: Install Python dependencies with Poetry (if available)
+      shell: |
+        cd {{ backend_path }}
+        poetry install --no-root
+      when: poetry_check.rc == 0
+    
+    - name: Check if npm is installed
+      command: npm --version
+      register: npm_check
+      changed_when: false
+      failed_when: false
+    
+    - name: Install frontend dependencies (if npm available)
+      npm:
+        path: "{{ frontend_path }}"
+        state: present
+      when: npm_check.rc == 0
+    
+    - name: Start backend services with Docker Compose
+      shell: |
+        docker compose up -d db
+      args:
+        chdir: "{{ backend_path }}"
+      environment:
+        COMPOSE_PROJECT_NAME: "{{ project_name }}"
+    
+    - name: Wait for PostgreSQL to be ready
+      wait_for:
+        port: 5433
+        host: localhost
+        delay: 5
+        timeout: 60
+    
+    - name: Check if database is initialized
+      shell: |
+        docker compose exec -T db psql -U user -d bvmw_survey -c "SELECT 1 FROM members LIMIT 1;" 2>/dev/null || echo "NOTFOUND"
+      args:
+        chdir: "{{ backend_path }}"
+      register: db_check
+      changed_when: false
+      failed_when: false
+    
+    - name: Initialize database if needed
+      shell: |
+        docker compose exec -T db psql -U user -d postgres -c "CREATE DATABASE bvmw_survey;" || true
+        docker compose exec -T db psql -U user -d bvmw_survey < init.sql
+      args:
+        chdir: "{{ backend_path }}"
+      when: '"NOTFOUND" in db_check.stdout'
+    
+    - name: Start backend application
+      shell: |
+        docker compose up -d backend
+      args:
+        chdir: "{{ backend_path }}"
+      environment:
+        COMPOSE_PROJECT_NAME: "{{ project_name }}"
+    
+    - name: Check backend health
+      uri:
+        url: "http://localhost:8000/health"
+        method: GET
+        status_code: [200, 404]
+      register: backend_health
+      retries: 10
+      delay: 3
+      until: backend_health.status in [200, 404]
+    
+    - name: Start frontend development server
+      shell: |
+        cd {{ frontend_path }}
+        npm run dev &
+        echo $! > /tmp/frontend-dev.pid
+      async: 30
+      poll: 0
+      when: npm_check.rc == 0
+    
+    - name: Display setup summary
+      debug:
+        msg:
+          - "========================================="
+          - "Local Development Environment Ready!"
+          - "========================================="
+          - "Backend API: http://localhost:8000"
+          - "API Documentation: http://localhost:8000/docs"
+          - "Frontend: http://localhost:5173"
+          - "PostgreSQL: localhost:5433"
+          - "Redis: Not configured (add to docker-compose.yml if needed)"
+          - "========================================="
+          - "To stop services: docker compose down"
+          - "To view logs: docker compose logs -f"
+          - "========================================="

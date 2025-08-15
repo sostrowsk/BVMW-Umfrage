@@ -86,11 +86,11 @@
       when: blue_green_deployment | default(true)
     
     - name: Standard deployment (if not blue-green)
-      docker_compose:
-        project_src: "{{ project_path }}"
-        pull: yes
-        recreate: smart
-        restarted: yes
+      shell: |
+        docker compose pull
+        docker compose up -d --force-recreate
+      args:
+        chdir: "{{ project_path }}"
       when: not (blue_green_deployment | default(true))
     
     - name: Run database migrations

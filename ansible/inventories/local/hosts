@@ -1,0 +1,21 @@
+[all:vars]
+ansible_connection=local
+ansible_python_interpreter=/usr/bin/python3
+
+[web_servers]
+localhost ansible_connection=local
+
+[db_servers]
+localhost ansible_connection=local
+
+[app_servers]
+localhost ansible_connection=local
+
+[monitoring_servers]
+localhost ansible_connection=local
+
+[local:children]
+web_servers
+db_servers
+app_servers
+monitoring_servers

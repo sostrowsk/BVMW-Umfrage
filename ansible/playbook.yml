@@ -137,10 +137,11 @@
         name: survey_network
     
     - name: Start Docker services
-      docker_compose:
-        project_src: "{{ project_path }}"
-        state: present
-        pull: yes
+      shell: |
+        docker compose pull
+        docker compose up -d
+      args:
+        chdir: "{{ project_path }}"
       environment:
         COMPOSE_PROJECT_NAME: "{{ project_name }}"
     
