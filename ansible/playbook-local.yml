@@ -27,7 +27,7 @@
     - name: Install Python dependencies
       shell: |
         cd {{ project_path }}
-        poetry install --with dev
+        poetry install --no-root
       args:
         executable: /bin/bash
     
