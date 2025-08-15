@@ -1,6 +1,7 @@
-from sqlalchemy.orm import Session
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
+from sqlalchemy.orm import Session
 
 from . import models, schemas
 from .security import get_password_hash
@@ -37,9 +38,7 @@ def create_member(db: Session, member: schemas.MemberCreate):
 # Organization CRUD
 # =============================================================================
 def get_organization(db: Session, org_id: uuid.UUID):
-    return (
-        db.query(models.Organization).filter(models.Organization.id == org_id).first()
-    )
+    return db.query(models.Organization).filter(models.Organization.id == org_id).first()
 
 
 def create_organization(db: Session, organization: schemas.OrganizationCreate):
@@ -84,7 +83,7 @@ def create_survey_response(
         survey_id=survey_id,
         member_id=member_id,
         organization_id=organization_id,
-        completed_at=datetime.now(timezone.utc)
+        completed_at=datetime.now(UTC),
     )
     db.add(db_response)
     db.commit()

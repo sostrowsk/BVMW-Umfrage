@@ -62,18 +62,12 @@ def test_create_survey_unauthenticated(client: TestClient):
 
 def test_create_and_get_survey_authenticated(client: TestClient, db_session: Session):
     # Create org and user
-    org = crud.create_organization(
-        db_session, schemas.OrganizationCreate(name="AuthCorp")
-    )
-    user_schema = schemas.MemberCreate(
-        email="auth.user@authcorp.com", password="password", organization_id=org.id
-    )
+    org = crud.create_organization(db_session, schemas.OrganizationCreate(name="AuthCorp"))
+    user_schema = schemas.MemberCreate(email="auth.user@authcorp.com", password="password", organization_id=org.id)
     user = crud.create_member(db_session, user_schema)
 
     # Get token
-    login_res = client.post(
-        "/api/v1/auth/token", data={"username": user.email, "password": "password"}
-    )
+    login_res = client.post("/api/v1/auth/token", data={"username": user.email, "password": "password"})
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -99,20 +93,14 @@ def test_create_and_get_survey_authenticated(client: TestClient, db_session: Ses
 
 def test_submit_response(client: TestClient, db_session: Session):
     # Create org, user, survey
-    org = crud.create_organization(
-        db_session, schemas.OrganizationCreate(name="ResponseCorp")
-    )
-    user_schema = schemas.MemberCreate(
-        email="resp.user@rescorp.com", password="password", organization_id=org.id
-    )
+    org = crud.create_organization(db_session, schemas.OrganizationCreate(name="ResponseCorp"))
+    user_schema = schemas.MemberCreate(email="resp.user@rescorp.com", password="password", organization_id=org.id)
     user = crud.create_member(db_session, user_schema)
     survey_schema = schemas.SurveyCreate(title="Feedback Survey", config={})
     survey = crud.create_survey(db_session, survey_schema, creator_id=user.id)
 
     # Get token
-    login_res = client.post(
-        "/api/v1/auth/token", data={"username": user.email, "password": "password"}
-    )
+    login_res = client.post("/api/v1/auth/token", data={"username": user.email, "password": "password"})
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 

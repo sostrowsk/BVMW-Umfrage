@@ -1,8 +1,10 @@
 import uuid
-from sqlalchemy import Column, String, Date, DateTime, ForeignKey, Integer, JSON
+
+from sqlalchemy import JSON, Column, Date, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from .database import Base
 
 
@@ -24,9 +26,7 @@ class Member(Base):
     __tablename__ = "members"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    organization_id = Column(
-        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="SET NULL")
-    )
+    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="SET NULL"))
     email = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
     name = Column(String(255))
@@ -48,9 +48,7 @@ class Survey(Base):
     version = Column(String(10))
     config = Column(JSON, nullable=False)
     status = Column(String(50), default="draft")
-    created_by_id = Column(
-        UUID(as_uuid=True), ForeignKey("members.id", ondelete="SET NULL")
-    )
+    created_by_id = Column(UUID(as_uuid=True), ForeignKey("members.id", ondelete="SET NULL"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     published_at = Column(DateTime(timezone=True))
     closed_at = Column(DateTime(timezone=True))
@@ -63,15 +61,9 @@ class SurveyResponse(Base):
     __tablename__ = "survey_responses"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    survey_id = Column(
-        UUID(as_uuid=True), ForeignKey("surveys.id", ondelete="CASCADE"), index=True
-    )
-    member_id = Column(
-        UUID(as_uuid=True), ForeignKey("members.id", ondelete="SET NULL"), index=True
-    )
-    organization_id = Column(
-        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="SET NULL")
-    )
+    survey_id = Column(UUID(as_uuid=True), ForeignKey("surveys.id", ondelete="CASCADE"), index=True)
+    member_id = Column(UUID(as_uuid=True), ForeignKey("members.id", ondelete="SET NULL"), index=True)
+    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="SET NULL"))
     started_at = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True), index=True)
     time_spent_seconds = Column(Integer)

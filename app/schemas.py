@@ -1,7 +1,8 @@
 import uuid
-from pydantic import BaseModel, EmailStr, ConfigDict
-from typing import Optional, Dict, Any
-from datetime import datetime, date
+from datetime import date, datetime
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 # =============================================================================
@@ -9,9 +10,9 @@ from datetime import datetime, date
 # =============================================================================
 class OrganizationBase(BaseModel):
     name: str
-    size_category: Optional[str] = None
-    industry: Optional[str] = None
-    membership_start_date: Optional[date] = None
+    size_category: str | None = None
+    industry: str | None = None
+    membership_start_date: date | None = None
 
 
 class OrganizationCreate(OrganizationBase):
@@ -29,21 +30,21 @@ class Organization(OrganizationBase):
 # =============================================================================
 class MemberBase(BaseModel):
     email: EmailStr
-    name: Optional[str] = None
-    role: Optional[str] = None
-    preferences: Optional[Dict[str, Any]] = None
+    name: str | None = None
+    role: str | None = None
+    preferences: dict[str, Any] | None = None
 
 
 class MemberCreate(MemberBase):
     password: str
-    organization_id: Optional[uuid.UUID] = None
+    organization_id: uuid.UUID | None = None
 
 
 class Member(MemberBase):
     id: uuid.UUID
-    organization_id: Optional[uuid.UUID] = None
+    organization_id: uuid.UUID | None = None
     created_at: datetime
-    organization: Optional[Organization] = None
+    organization: Organization | None = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -52,8 +53,8 @@ class Member(MemberBase):
 # =============================================================================
 class SurveyBase(BaseModel):
     title: str
-    description: Optional[str] = None
-    config: Dict[str, Any]
+    description: str | None = None
+    config: dict[str, Any]
 
 
 class SurveyCreate(SurveyBase):
@@ -62,12 +63,12 @@ class SurveyCreate(SurveyBase):
 
 class Survey(SurveyBase):
     id: uuid.UUID
-    version: Optional[str] = None
+    version: str | None = None
     status: str
-    created_by_id: Optional[uuid.UUID] = None
+    created_by_id: uuid.UUID | None = None
     created_at: datetime
-    published_at: Optional[datetime] = None
-    closed_at: Optional[datetime] = None
+    published_at: datetime | None = None
+    closed_at: datetime | None = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -75,8 +76,8 @@ class Survey(SurveyBase):
 # Survey Response Schemas
 # =============================================================================
 class SurveyResponseBase(BaseModel):
-    answers: Dict[str, Any]
-    time_spent_seconds: Optional[int] = None
+    answers: dict[str, Any]
+    time_spent_seconds: int | None = None
 
 
 class SurveyResponseCreate(SurveyResponseBase):
@@ -88,12 +89,12 @@ class SurveyResponseCreate(SurveyResponseBase):
 class SurveyResponse(SurveyResponseBase):
     id: uuid.UUID
     survey_id: uuid.UUID
-    member_id: Optional[uuid.UUID] = None
-    organization_id: Optional[uuid.UUID] = None
+    member_id: uuid.UUID | None = None
+    organization_id: uuid.UUID | None = None
     started_at: datetime
-    completed_at: Optional[datetime] = None
-    impact_score: Optional[int] = None
-    meta: Optional[Dict[str, Any]] = None
+    completed_at: datetime | None = None
+    impact_score: int | None = None
+    meta: dict[str, Any] | None = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -106,4 +107,4 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    email: Optional[str] = None
+    email: str | None = None
