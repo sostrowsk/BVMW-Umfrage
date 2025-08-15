@@ -9,7 +9,6 @@ import {
   Menu, 
   X, 
   User,
-  Plus,
   Building
 } from 'lucide-react'
 const AppLayout: React.FC = () => {
@@ -22,11 +21,11 @@ const AppLayout: React.FC = () => {
     navigate('/login')
   }
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Surveys', href: '/surveys', icon: FileText },
-    { name: 'Members', href: '/members', icon: User },
-    { name: 'Organizations', href: '/organizations', icon: Building },
-    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { name: 'Dashboard', href: '/dashboard', icon: Home, adminOnly: false },
+    { name: 'Surveys', href: '/surveys', icon: FileText, adminOnly: false },
+    { name: 'Members', href: '/members', icon: User, adminOnly: false },
+    { name: 'Organizations', href: '/organizations', icon: Building, adminOnly: true },
+    { name: 'Analytics', href: '/analytics', icon: BarChart3, adminOnly: false },
   ]
   const isActive = (path: string) => location.pathname === path
   return (

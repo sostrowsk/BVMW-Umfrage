@@ -56,6 +56,70 @@ run_linters() {
     fi
     echo
 }
+
+run_frontend_linters() {
+    log_info "Running Frontend Linters"
+    echo "===================="
+    
+    # Check if frontend directory exists
+    if [[ ! -d "$PROJECT_ROOT/frontend" ]]; then
+        log_info "Frontend directory not found, skipping frontend linting"
+        return 0
+    fi
+    
+    # Change to frontend directory
+    cd "$PROJECT_ROOT/frontend"
+    
+    # Check if node_modules exists
+    if [[ ! -d "node_modules" ]]; then
+        log_info "node_modules not found, running npm install..."
+        npm install
+    fi
+    
+    # Run ESLint
+    echo "Running ESLint..."
+    if [[ "$FIX_MODE" == true ]]; then
+        if npm run lint:fix 2>/dev/null || npx eslint . --ext .ts,.tsx,.js,.jsx --fix; then
+            log_success "ESLint fixes applied"
+        else
+            log_error "ESLint fix failed"
+        fi
+    else
+        if npm run lint 2>/dev/null || npx eslint . --ext .ts,.tsx,.js,.jsx; then
+            log_success "ESLint check passed"
+        else
+            log_error "ESLint check failed (run with -f flag to fix)"
+        fi
+    fi
+    
+    # Run TypeScript type checking
+    echo "Running TypeScript type check..."
+    if npx tsc --noEmit; then
+        log_success "TypeScript check passed"
+    else
+        log_error "TypeScript check failed"
+    fi
+    
+    # Run Prettier
+    echo "Running Prettier..."
+    if [[ "$FIX_MODE" == true ]]; then
+        if npx prettier --write "src/**/*.{ts,tsx,js,jsx,css,scss,json}"; then
+            log_success "Prettier formatting applied"
+        else
+            log_error "Prettier formatting failed"
+        fi
+    else
+        if npx prettier --check "src/**/*.{ts,tsx,js,jsx,css,scss,json}"; then
+            log_success "Prettier check passed"
+        else
+            log_error "Prettier check failed (run with -f flag to fix)"
+        fi
+    fi
+    
+    # Return to project root
+    cd "$PROJECT_ROOT"
+    echo
+}
 run_tests() {
     log_info "Running Tests"
     echo "===================="
@@ -78,17 +142,31 @@ run_tests() {
 show_usage() {
     cat << EOF
 Usage: $0 [OPTIONS] [FILES/TESTS]
+
+This script runs code quality checks for both Python (backend) and TypeScript/React (frontend).
+
 Options:
     -h, --help       Show this help message
     -c, --check      Run checks only (no fixes)
     -f, --fix        Apply automatic fixes
     -t, --tests      Run tests only
-    -l, --lint       Run linters only
+    -l, --lint       Run linters only (Python & TypeScript)
     -a, --all        Run all checks and tests (default)
     --no-format      Skip formatting checks
     --no-lint        Skip linting
     --no-tests       Skip tests
     --clean-cache    Clean Python cache (__pycache__, *.pyc, *.pyo)
+
+Python Checks:
+    - Black (code formatting)
+    - Ruff (linting)
+    - Pytest (testing)
+
+Frontend Checks (if frontend/ exists):
+    - ESLint (TypeScript/React linting)
+    - TypeScript (type checking)
+    - Prettier (code formatting)
+
 Examples:
     $0                      # Run all checks and tests
     $0 -c                   # Check only, no fixes
@@ -202,6 +280,7 @@ else
     fi
     if [[ "$LINTING" == true ]]; then
         run_linters
+        run_frontend_linters
     fi
 fi
 if [[ "$TESTING" == true ]]; then
