@@ -6,8 +6,6 @@ import {
   Trash2,
   GripVertical,
   Save,
-  Eye,
-  Settings,
   Copy,
 } from "lucide-react";
 import { getSurvey, createSurvey, updateSurvey } from "../api/surveys";

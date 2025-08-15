@@ -5,7 +5,6 @@ import { surveysApi } from "../api/surveys";
 import { useAuth } from "../features/auth/AuthContext";
 import {
   FileText,
-  Users,
   BarChart,
   Clock,
   ArrowRight,
