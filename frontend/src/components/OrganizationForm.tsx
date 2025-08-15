@@ -1,46 +1,53 @@
-import React, { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
+import React, { useState, useEffect } from "react";
+import { X } from "lucide-react";
 interface OrganizationFormProps {
-  organization?: any
-  onClose: () => void
-  onSubmit: (data: any) => void
+  organization?: any;
+  onClose: () => void;
+  onSubmit: (data: any) => void;
 }
-export default function OrganizationForm({ organization, onClose, onSubmit }: OrganizationFormProps) {
+export default function OrganizationForm({
+  organization,
+  onClose,
+  onSubmit,
+}: OrganizationFormProps) {
   const [formData, setFormData] = useState({
-    name: '',
-    sizeCategory: '',
-    industry: '',
-    membershipStartDate: '',
-    address: '',
-    website: '',
-    contactEmail: '',
-    contactPhone: '',
-  })
+    name: "",
+    sizeCategory: "",
+    industry: "",
+    membershipStartDate: "",
+    address: "",
+    website: "",
+    contactEmail: "",
+    contactPhone: "",
+  });
   useEffect(() => {
     if (organization) {
       setFormData({
-        name: organization.name || '',
-        sizeCategory: organization.sizeCategory || '',
-        industry: organization.industry || '',
-        membershipStartDate: organization.membershipStartDate ? 
-          new Date(organization.membershipStartDate).toISOString().split('T')[0] : '',
-        address: organization.address || '',
-        website: organization.website || '',
-        contactEmail: organization.contactEmail || '',
-        contactPhone: organization.contactPhone || '',
-      })
+        name: organization.name || "",
+        sizeCategory: organization.sizeCategory || "",
+        industry: organization.industry || "",
+        membershipStartDate: organization.membershipStartDate
+          ? new Date(organization.membershipStartDate)
+              .toISOString()
+              .split("T")[0]
+          : "",
+        address: organization.address || "",
+        website: organization.website || "",
+        contactEmail: organization.contactEmail || "",
+        contactPhone: organization.contactPhone || "",
+      });
     }
-  }, [organization])
+  }, [organization]);
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
+    e.preventDefault();
+    onSubmit(formData);
+  };
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">
-            {organization ? 'Edit Organization' : 'Add New Organization'}
+            {organization ? "Edit Organization" : "Add New Organization"}
           </h2>
           <button
             onClick={onClose}
@@ -60,7 +67,9 @@ export default function OrganizationForm({ organization, onClose, onSubmit }: Or
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
               />
             </div>
             <div>
@@ -70,7 +79,9 @@ export default function OrganizationForm({ organization, onClose, onSubmit }: Or
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={formData.sizeCategory}
-                onChange={(e) => setFormData({ ...formData, sizeCategory: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, sizeCategory: e.target.value })
+                }
               >
                 <option value="">Select size</option>
                 <option value="small">Small (1-50 employees)</option>
@@ -87,7 +98,9 @@ export default function OrganizationForm({ organization, onClose, onSubmit }: Or
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={formData.industry}
-                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, industry: e.target.value })
+                }
                 placeholder="e.g., Technology, Manufacturing"
               />
             </div>
@@ -99,7 +112,12 @@ export default function OrganizationForm({ organization, onClose, onSubmit }: Or
                 type="date"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={formData.membershipStartDate}
-                onChange={(e) => setFormData({ ...formData, membershipStartDate: e.target.value })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    membershipStartDate: e.target.value,
+                  })
+                }
               />
             </div>
             <div>
@@ -110,7 +128,9 @@ export default function OrganizationForm({ organization, onClose, onSubmit }: Or
                 type="url"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={formData.website}
-                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, website: e.target.value })
+                }
                 placeholder="https://example.com"
               />
             </div>
@@ -122,7 +142,9 @@ export default function OrganizationForm({ organization, onClose, onSubmit }: Or
                 rows={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
                 placeholder="Street address, city, postal code"
               />
             </div>
@@ -134,7 +156,9 @@ export default function OrganizationForm({ organization, onClose, onSubmit }: Or
                 type="email"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={formData.contactEmail}
-                onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactEmail: e.target.value })
+                }
                 placeholder="contact@example.com"
               />
             </div>
@@ -146,7 +170,9 @@ export default function OrganizationForm({ organization, onClose, onSubmit }: Or
                 type="tel"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={formData.contactPhone}
-                onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactPhone: e.target.value })
+                }
                 placeholder="+49 123 456789"
               />
             </div>
@@ -163,11 +189,11 @@ export default function OrganizationForm({ organization, onClose, onSubmit }: Or
               type="submit"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              {organization ? 'Update' : 'Create'} Organization
+              {organization ? "Update" : "Create"} Organization
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }

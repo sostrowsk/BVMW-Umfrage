@@ -1,44 +1,57 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import { surveysApi } from '../api/surveys'
-import { useAuth } from '../features/auth/AuthContext'
-import { FileText, Search, Filter, Plus, Calendar, ChevronRight } from 'lucide-react'
-import { Survey } from '../types'
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { surveysApi } from "../api/surveys";
+import { useAuth } from "../features/auth/AuthContext";
+import {
+  FileText,
+  Search,
+  Filter,
+  Plus,
+  Calendar,
+  ChevronRight,
+} from "lucide-react";
+import { Survey } from "../types";
 const SurveyList: React.FC = () => {
-  const navigate = useNavigate()
-  const { user } = useAuth()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const { data: surveys, isLoading, error } = useQuery({
-    queryKey: ['surveys'],
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const {
+    data: surveys,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["surveys"],
     queryFn: () => surveysApi.getSurveys(),
-  })
+  });
   const filteredSurveys = surveys?.filter((survey) => {
-    const matchesSearch = survey.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          survey.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || survey.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
-  const getStatusBadge = (status: Survey['status']) => {
+    const matchesSearch =
+      survey.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      survey.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || survey.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+  const getStatusBadge = (status: Survey["status"]) => {
     switch (status) {
-      case 'published':
-        return 'bg-green-100 text-green-800'
-      case 'draft':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'closed':
-        return 'bg-gray-100 text-gray-800'
+      case "published":
+        return "bg-green-100 text-green-800";
+      case "draft":
+        return "bg-yellow-100 text-yellow-800";
+      case "closed":
+        return "bg-gray-100 text-gray-800";
       default:
-        return 'bg-gray-100 text-gray-800'
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
-  }
+    return new Date(dateString).toLocaleDateString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
   return (
     <div className="px-4 sm:px-0">
       <div className="sm:flex sm:items-center sm:justify-between mb-8">
@@ -48,10 +61,10 @@ const SurveyList: React.FC = () => {
             Verwalten Sie Ihre Umfragen und nehmen Sie an aktiven Umfragen teil.
           </p>
         </div>
-        {user?.role === 'admin' && (
+        {user?.role === "admin" && (
           <div className="mt-4 sm:mt-0">
             <button
-              onClick={() => navigate('/surveys/create')}
+              onClick={() => navigate("/surveys/create")}
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -114,9 +127,14 @@ const SurveyList: React.FC = () => {
                         <h3 className="text-lg font-medium text-gray-900">
                           {survey.title}
                         </h3>
-                        <span className={`ml-3 inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(survey.status)}`}>
-                          {survey.status === 'published' ? 'Aktiv' : 
-                           survey.status === 'draft' ? 'Entwurf' : 'Geschlossen'}
+                        <span
+                          className={`ml-3 inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(survey.status)}`}
+                        >
+                          {survey.status === "published"
+                            ? "Aktiv"
+                            : survey.status === "draft"
+                              ? "Entwurf"
+                              : "Geschlossen"}
                         </span>
                       </div>
                       {survey.description && (
@@ -146,26 +164,28 @@ const SurveyList: React.FC = () => {
                 Keine Umfragen gefunden
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                {searchTerm || statusFilter !== 'all' 
-                  ? 'Versuchen Sie es mit anderen Suchkriterien.'
-                  : 'Es sind noch keine Umfragen vorhanden.'}
+                {searchTerm || statusFilter !== "all"
+                  ? "Versuchen Sie es mit anderen Suchkriterien."
+                  : "Es sind noch keine Umfragen vorhanden."}
               </p>
-              {user?.role === 'admin' && !searchTerm && statusFilter === 'all' && (
-                <div className="mt-6">
-                  <button
-                    onClick={() => navigate('/surveys/create')}
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Erste Umfrage erstellen
-                  </button>
-                </div>
-              )}
+              {user?.role === "admin" &&
+                !searchTerm &&
+                statusFilter === "all" && (
+                  <div className="mt-6">
+                    <button
+                      onClick={() => navigate("/surveys/create")}
+                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Erste Umfrage erstellen
+                    </button>
+                  </div>
+                )}
             </div>
           )}
         </div>
       </div>
     </div>
-  )
-}
-export default SurveyList
+  );
+};
+export default SurveyList;

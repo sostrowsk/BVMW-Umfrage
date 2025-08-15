@@ -1,33 +1,43 @@
-import React, { useState } from 'react'
-import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../features/auth/AuthContext'
-import { 
-  Home, 
-  FileText, 
-  BarChart3, 
-  LogOut, 
-  Menu, 
-  X, 
+import React, { useState } from "react";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../features/auth/AuthContext";
+import {
+  Home,
+  FileText,
+  BarChart3,
+  LogOut,
+  Menu,
+  X,
   User,
-  Building
-} from 'lucide-react'
+  Building,
+} from "lucide-react";
 const AppLayout: React.FC = () => {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+    logout();
+    navigate("/login");
+  };
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home, adminOnly: false },
-    { name: 'Surveys', href: '/surveys', icon: FileText, adminOnly: false },
-    { name: 'Members', href: '/members', icon: User, adminOnly: false },
-    { name: 'Organizations', href: '/organizations', icon: Building, adminOnly: true },
-    { name: 'Analytics', href: '/analytics', icon: BarChart3, adminOnly: false },
-  ]
-  const isActive = (path: string) => location.pathname === path
+    { name: "Dashboard", href: "/dashboard", icon: Home, adminOnly: false },
+    { name: "Surveys", href: "/surveys", icon: FileText, adminOnly: false },
+    { name: "Members", href: "/members", icon: User, adminOnly: false },
+    {
+      name: "Organizations",
+      href: "/organizations",
+      icon: Building,
+      adminOnly: true,
+    },
+    {
+      name: "Analytics",
+      href: "/analytics",
+      icon: BarChart3,
+      adminOnly: false,
+    },
+  ];
+  const isActive = (path: string) => location.pathname === path;
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b border-gray-200">
@@ -39,15 +49,15 @@ const AppLayout: React.FC = () => {
               </div>
               <div className="hidden sm:ml-8 sm:flex sm:space-x-8">
                 {navigation
-                  .filter(item => !item.adminOnly || user?.role === 'admin')
+                  .filter((item) => !item.adminOnly || user?.role === "admin")
                   .map((item) => (
                     <Link
                       key={item.name}
                       to={item.href}
                       className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                         isActive(item.href)
-                          ? 'border-blue-500 text-gray-900'
-                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                          ? "border-blue-500 text-gray-900"
+                          : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                       }`}
                     >
                       <item.icon className="w-4 h-4 mr-2" />
@@ -87,15 +97,15 @@ const AppLayout: React.FC = () => {
           <div className="sm:hidden">
             <div className="pt-2 pb-3 space-y-1">
               {navigation
-                .filter(item => !item.adminOnly || user?.role === 'admin')
+                .filter((item) => !item.adminOnly || user?.role === "admin")
                 .map((item) => (
                   <Link
                     key={item.name}
                     to={item.href}
                     className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
                       isActive(item.href)
-                        ? 'bg-blue-50 border-blue-500 text-blue-700'
-                        : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                        ? "bg-blue-50 border-blue-500 text-blue-700"
+                        : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -113,9 +123,11 @@ const AppLayout: React.FC = () => {
                 </div>
                 <div className="ml-3">
                   <div className="text-base font-medium text-gray-800">
-                    {user?.name || 'User'}
+                    {user?.name || "User"}
                   </div>
-                  <div className="text-sm font-medium text-gray-500">{user?.email}</div>
+                  <div className="text-sm font-medium text-gray-500">
+                    {user?.email}
+                  </div>
                 </div>
               </div>
               <div className="mt-3 space-y-1">
@@ -134,6 +146,6 @@ const AppLayout: React.FC = () => {
         <Outlet />
       </main>
     </div>
-  )
-}
-export default AppLayout
+  );
+};
+export default AppLayout;

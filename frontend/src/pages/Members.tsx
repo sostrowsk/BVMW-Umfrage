@@ -1,47 +1,61 @@
-import React, { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Users, Search, Plus, Edit, Trash2, Mail, Building } from 'lucide-react'
-import { getMembers, createMember, updateMember, deleteMember } from '../api/members'
-import MemberForm from '../components/MemberForm'
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Users,
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Mail,
+  Building,
+} from "lucide-react";
+import {
+  getMembers,
+  createMember,
+  updateMember,
+  deleteMember,
+} from "../api/members";
+import MemberForm from "../components/MemberForm";
 export default function Members() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [showForm, setShowForm] = useState(false)
-  const [editingMember, setEditingMember] = useState<any>(null)
-  const queryClient = useQueryClient()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [editingMember, setEditingMember] = useState<any>(null);
+  const queryClient = useQueryClient();
   const { data: members = [], isLoading } = useQuery({
-    queryKey: ['members'],
+    queryKey: ["members"],
     queryFn: getMembers,
-  })
+  });
   const createMutation = useMutation({
     mutationFn: createMember,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['members'] })
-      setShowForm(false)
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      setShowForm(false);
     },
-  })
+  });
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: any) => updateMember(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['members'] })
-      setEditingMember(null)
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      setEditingMember(null);
     },
-  })
+  });
   const deleteMutation = useMutation({
     mutationFn: deleteMember,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['members'] })
+      queryClient.invalidateQueries({ queryKey: ["members"] });
     },
-  })
-  const filteredMembers = members.filter((member: any) =>
-    member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.role?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  });
+  const filteredMembers = members.filter(
+    (member: any) =>
+      member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.role?.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this member?')) {
-      deleteMutation.mutate(id)
+    if (confirm("Are you sure you want to delete this member?")) {
+      deleteMutation.mutate(id);
     }
-  }
+  };
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow">
@@ -51,7 +65,9 @@ export default function Members() {
               <Users className="h-8 w-8 text-blue-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Members</h1>
-                <p className="text-gray-600">Manage organization members and their roles</p>
+                <p className="text-gray-600">
+                  Manage organization members and their roles
+                </p>
               </div>
             </div>
             <button
@@ -114,12 +130,15 @@ export default function Members() {
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
                           <span className="text-blue-600 font-medium">
-                            {member.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
+                            {member.name
+                              ?.split(" ")
+                              .map((n: string) => n[0])
+                              .join("") || "U"}
                           </span>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {member.name || 'Unnamed User'}
+                            {member.name || "Unnamed User"}
                           </div>
                         </div>
                       </div>
@@ -131,14 +150,16 @@ export default function Members() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        member.role === 'admin'
-                          ? 'bg-purple-100 text-purple-800'
-                          : member.role === 'manager'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {member.role || 'member'}
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          member.role === "admin"
+                            ? "bg-purple-100 text-purple-800"
+                            : member.role === "manager"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {member.role || "member"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -148,16 +169,20 @@ export default function Members() {
                           {member.organization.name}
                         </div>
                       ) : (
-                        <span className="text-sm text-gray-500">No organization</span>
+                        <span className="text-sm text-gray-500">
+                          No organization
+                        </span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        member.isActive
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {member.isActive ? 'Active' : 'Inactive'}
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          member.isActive
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {member.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -187,18 +212,18 @@ export default function Members() {
         <MemberForm
           member={editingMember}
           onClose={() => {
-            setShowForm(false)
-            setEditingMember(null)
+            setShowForm(false);
+            setEditingMember(null);
           }}
           onSubmit={(data) => {
             if (editingMember) {
-              updateMutation.mutate({ id: editingMember.id, data })
+              updateMutation.mutate({ id: editingMember.id, data });
             } else {
-              createMutation.mutate(data)
+              createMutation.mutate(data);
             }
           }}
         />
       )}
     </div>
-  )
+  );
 }

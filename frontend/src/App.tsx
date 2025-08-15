@@ -1,18 +1,23 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AuthProvider } from './features/auth/AuthContext'
-import ProtectedRoute from './components/ProtectedRoute'
-import AppLayout from './layouts/AppLayout'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Dashboard from './pages/Dashboard'
-import SurveyList from './pages/SurveyList'
-import SurveyDetail from './pages/SurveyDetail'
-import SurveyEditor from './pages/SurveyEditor'
-import Members from './pages/Members'
-import Organizations from './pages/Organizations'
-import Analytics from './pages/Analytics'
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "./features/auth/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AppLayout from "./layouts/AppLayout";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import SurveyList from "./pages/SurveyList";
+import SurveyDetail from "./pages/SurveyDetail";
+import SurveyEditor from "./pages/SurveyEditor";
+import Members from "./pages/Members";
+import Organizations from "./pages/Organizations";
+import Analytics from "./pages/Analytics";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -20,7 +25,7 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
-})
+});
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -51,6 +56,6 @@ function App() {
         </Router>
       </AuthProvider>
     </QueryClientProvider>
-  )
+  );
 }
-export default App
+export default App;

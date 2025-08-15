@@ -1,56 +1,80 @@
-import React, { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Building, Search, Plus, Edit, Trash2, Users, Calendar, TrendingUp } from 'lucide-react'
-import { getOrganizations, createOrganization, updateOrganization, deleteOrganization } from '../api/organizations'
-import OrganizationForm from '../components/OrganizationForm'
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Building,
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Users,
+  Calendar,
+  TrendingUp,
+} from "lucide-react";
+import {
+  getOrganizations,
+  createOrganization,
+  updateOrganization,
+  deleteOrganization,
+} from "../api/organizations";
+import OrganizationForm from "../components/OrganizationForm";
 export default function Organizations() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [showForm, setShowForm] = useState(false)
-  const [editingOrg, setEditingOrg] = useState<any>(null)
-  const queryClient = useQueryClient()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [editingOrg, setEditingOrg] = useState<any>(null);
+  const queryClient = useQueryClient();
   const { data: organizations = [], isLoading } = useQuery({
-    queryKey: ['organizations'],
+    queryKey: ["organizations"],
     queryFn: getOrganizations,
-  })
+  });
   const createMutation = useMutation({
     mutationFn: createOrganization,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organizations'] })
-      setShowForm(false)
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      setShowForm(false);
     },
-  })
+  });
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: any) => updateOrganization(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organizations'] })
-      setEditingOrg(null)
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      setEditingOrg(null);
     },
-  })
+  });
   const deleteMutation = useMutation({
     mutationFn: deleteOrganization,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organizations'] })
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
     },
-  })
-  const filteredOrganizations = organizations.filter((org: any) =>
-    org.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    org.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    org.sizeCategory?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  });
+  const filteredOrganizations = organizations.filter(
+    (org: any) =>
+      org.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      org.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      org.sizeCategory?.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this organization? This action cannot be undone.')) {
-      deleteMutation.mutate(id)
+    if (
+      confirm(
+        "Are you sure you want to delete this organization? This action cannot be undone.",
+      )
+    ) {
+      deleteMutation.mutate(id);
     }
-  }
+  };
   const getSizeCategoryColor = (category: string) => {
     switch (category) {
-      case 'small': return 'bg-green-100 text-green-800'
-      case 'medium': return 'bg-blue-100 text-blue-800'
-      case 'large': return 'bg-purple-100 text-purple-800'
-      case 'enterprise': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case "small":
+        return "bg-green-100 text-green-800";
+      case "medium":
+        return "bg-blue-100 text-blue-800";
+      case "large":
+        return "bg-purple-100 text-purple-800";
+      case "enterprise":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow">
@@ -59,8 +83,12 @@ export default function Organizations() {
             <div className="flex items-center gap-3">
               <Building className="h-8 w-8 text-blue-600" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Organizations</h1>
-                <p className="text-gray-600">Manage participating organizations</p>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Organizations
+                </h1>
+                <p className="text-gray-600">
+                  Manage participating organizations
+                </p>
               </div>
             </div>
             <button
@@ -94,7 +122,10 @@ export default function Organizations() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
             {filteredOrganizations.map((org: any) => (
-              <div key={org.id} className="bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
+              <div
+                key={org.id}
+                className="bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-shadow"
+              >
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -115,7 +146,9 @@ export default function Organizations() {
                       </button>
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{org.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {org.name}
+                  </h3>
                   {org.industry && (
                     <p className="text-sm text-gray-600 mb-3">{org.industry}</p>
                   )}
@@ -127,13 +160,18 @@ export default function Organizations() {
                     {org.membershipStartDate && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Calendar className="h-4 w-4" />
-                        <span>Since {new Date(org.membershipStartDate).getFullYear()}</span>
+                        <span>
+                          Since{" "}
+                          {new Date(org.membershipStartDate).getFullYear()}
+                        </span>
                       </div>
                     )}
                     {org.sizeCategory && (
                       <div className="flex items-center gap-2">
                         <TrendingUp className="h-4 w-4 text-gray-400" />
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getSizeCategoryColor(org.sizeCategory)}`}>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${getSizeCategoryColor(org.sizeCategory)}`}
+                        >
                           {org.sizeCategory}
                         </span>
                       </div>
@@ -143,7 +181,9 @@ export default function Organizations() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-500">Response Rate</span>
                       <span className="font-medium text-gray-900">
-                        {org.responseRate ? `${Math.round(org.responseRate * 100)}%` : 'N/A'}
+                        {org.responseRate
+                          ? `${Math.round(org.responseRate * 100)}%`
+                          : "N/A"}
                       </span>
                     </div>
                     <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
@@ -163,18 +203,18 @@ export default function Organizations() {
         <OrganizationForm
           organization={editingOrg}
           onClose={() => {
-            setShowForm(false)
-            setEditingOrg(null)
+            setShowForm(false);
+            setEditingOrg(null);
           }}
           onSubmit={(data) => {
             if (editingOrg) {
-              updateMutation.mutate({ id: editingOrg.id, data })
+              updateMutation.mutate({ id: editingOrg.id, data });
             } else {
-              createMutation.mutate(data)
+              createMutation.mutate(data);
             }
           }}
         />
       )}
     </div>
-  )
+  );
 }

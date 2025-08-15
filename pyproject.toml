@@ -37,7 +37,9 @@ select = [
     "C4",   # flake8-comprehensions
     "UP",   # pyupgrade
 ]
-ignore = []
+ignore = [
+    "B008",  # Do not perform function call in argument defaults (needed for FastAPI Depends)
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app", "tests"]
