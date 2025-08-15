@@ -1,6 +1,6 @@
-# BVMW Mitgliederbindung Survey Platform - Backend
+# Mitgliederbindung Survey Platform - Backend
 
-This repository contains the backend service for the BVMW Member Engagement Survey Platform. It is a FastAPI application that provides a RESTful API for managing surveys, members, and responses, built according to the specifications in the project's PRD.
+This repository contains the backend service for the Survey Platform. It is a FastAPI application that provides a RESTful API for managing surveys, members, and responses, built according to the specifications in the project's PRD.
 
 ## Tech Stack
 
@@ -34,7 +34,7 @@ cp .env.example .env
 
 Edit `.env` with your configuration. Key variables:
 ```env
-DATABASE_URL=postgresql://user:password@db:5432/bvmw_survey
+DATABASE_URL=postgresql://user:password@db:5432/survey_platform
 SECRET_KEY=your-secret-key-here  # Generate with: openssl rand -hex 32
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
@@ -226,7 +226,7 @@ docker-compose exec backend bash
 
 ## License
 
-This project is proprietary software for BVMW (Bundesverband mittelständische Wirtschaft).
+This project is proprietary software
 
 ## Support
 

@@ -16,9 +16,9 @@ from .database import SessionLocal, engine
 # models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="BVMW Survey API",
+    title="Survey API",
     version="1.0.0",
-    description="API for the BVMW Mitgliederbindung Survey Platform"
+    description="API for the Mitgliederbindung Survey Platform"
 )
 
 # =============================================================================
@@ -99,7 +99,7 @@ async def read_users_me(current_user: models.Member = Depends(get_current_user))
 
 @app.get("/", tags=["General"])
 def read_root():
-    return {"message": "Welcome to the BVMW Survey API"}
+    return {"message": "Welcome to the Survey API"}
 
 @app.post("/api/v1/surveys", response_model=schemas.Survey, status_code=201, tags=["Surveys"])
 def create_survey(

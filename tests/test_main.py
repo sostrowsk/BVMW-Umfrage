@@ -7,7 +7,7 @@ from app import crud, schemas
 def test_read_root(client: TestClient):
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to the BVMW Survey API"}
+    assert response.json() == {"message": "Welcome to the Survey API"}
 
 def test_create_and_login_user(client: TestClient, db_session: Session):
     # First, create an organization for the user

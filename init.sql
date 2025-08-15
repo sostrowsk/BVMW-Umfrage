@@ -1,4 +1,4 @@
--- Core Tables for BVMW Survey Platform MVP
+-- Core Tables for Survey Platform MVP
 
 -- Using pgcrypto for gen_random_uuid() if not built-in
 -- CREATE EXTENSION IF NOT EXISTS "pgcrypto";
