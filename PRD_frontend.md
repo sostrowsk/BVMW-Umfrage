@@ -1,5 +1,5 @@
 # Product Requirements Document (PRD)
-## BVMW Survey Platform - Frontend Application
+## Survey Platform - Frontend Application
 
 **Version:** 1.0.0  
 **Date:** January 15, 2025  
@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary
 
-The BVMW Survey Platform Frontend is a modern React TypeScript application that provides an intuitive, accessible, and responsive user interface for the BVMW Member Engagement Survey Platform. Built with performance and user experience at its core, it enables efficient survey creation, distribution, and response analysis.
+The Survey Platform Frontend is a modern React TypeScript application that provides an intuitive, accessible, and responsive user interface for the Member Engagement Survey Platform. Built with performance and user experience at its core, it enables efficient survey creation, distribution, and response analysis.
 
 ### 1.1 Vision Statement
 To deliver a world-class user experience that makes survey creation and participation effortless, driving higher engagement rates and providing actionable insights through intuitive data visualization.
@@ -27,7 +27,7 @@ To deliver a world-class user experience that makes survey creation and particip
 
 ## 2. Problem Statement
 
-Current survey tools used by BVMW members suffer from:
+Current survey tools used by members suffer from:
 - Poor mobile experience leading to 40% abandonment rate
 - Complex interfaces requiring training
 - Lack of real-time feedback and analytics
@@ -41,7 +41,7 @@ Current survey tools used by BVMW members suffer from:
 
 ### 3.1 Survey Administrator (Sarah)
 - **Age:** 35-45
-- **Role:** BVMW Program Manager
+- **Role:** Program Manager
 - **Tech Savvy:** Intermediate
 - **Goals:**
   - Create surveys quickly without technical help
@@ -54,7 +54,7 @@ Current survey tools used by BVMW members suffer from:
 
 ### 3.2 Survey Respondent (Michael)
 - **Age:** 25-65
-- **Role:** BVMW Member/Business Owner
+- **Role:** Member/Business Owner
 - **Tech Savvy:** Basic to Intermediate
 - **Goals:**
   - Complete surveys quickly
@@ -67,7 +67,7 @@ Current survey tools used by BVMW members suffer from:
 
 ### 3.3 Data Analyst (Thomas)
 - **Age:** 30-50
-- **Role:** BVMW Research Analyst
+- **Role:** Research Analyst
 - **Tech Savvy:** Advanced
 - **Goals:**
   - Access raw data for analysis
@@ -80,7 +80,7 @@ Current survey tools used by BVMW members suffer from:
 
 ### 3.4 Organization Administrator (Klaus)
 - **Age:** 40-60
-- **Role:** BVMW Department Head
+- **Role:** Department Head
 - **Tech Savvy:** Basic
 - **Goals:**
   - Manage user access and permissions
@@ -640,7 +640,7 @@ i18n.use(initReactI18next).init({
 
 ### 11.1 Backend API Endpoints
 ```typescript
-const API_BASE = 'https://api.bvmw-survey.de/api/v1';
+const API_BASE = 'https://api.survey.de/api/v1';
 
 // Authentication
 POST   /auth/token           // Login
@@ -825,12 +825,12 @@ const handleApiError = (error: ApiError) => {
 ## Contact Information
 
 **Product Owner:** [Name]  
-**Email:** product@bvmw-survey.de  
+**Email:** product@survey.de  
 **Slack:** #survey-platform-frontend
 
 **Technical Lead:** [Name]  
-**Email:** tech-lead@bvmw-survey.de  
-**GitHub:** @bvmw-survey
+**Email:** tech-lead@survey.de  
+**GitHub:** @survey
 
 ---
 

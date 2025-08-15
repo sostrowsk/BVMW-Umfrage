@@ -1,5 +1,5 @@
 # Product Requirements Document (PRD)
-## BVMW Survey Platform - Backend API
+## Survey Platform - Backend API
 
 **Version:** 1.0.0  
 **Date:** January 15, 2025  
@@ -10,10 +10,10 @@
 
 ## 1. Executive Summary
 
-The BVMW Survey Platform Backend is a RESTful API service designed to power the BVMW Member Engagement Survey Platform. Built with FastAPI and PostgreSQL, it provides secure, scalable, and performant endpoints for survey management, member authentication, and data analytics.
+The Survey Platform Backend is a RESTful API service designed to power the Member Engagement Survey Platform. Built with FastAPI and PostgreSQL, it provides secure, scalable, and performant endpoints for survey management, member authentication, and data analytics.
 
 ### 1.1 Vision Statement
-To deliver a robust, secure, and scalable API backend that enables BVMW to efficiently collect, manage, and analyze member feedback through surveys, driving data-informed decisions and improving member engagement.
+To deliver a robust, secure, and scalable API backend that enables to efficiently collect, manage, and analyze member feedback through surveys, driving data-informed decisions and improving member engagement.
 
 ### 1.2 Key Objectives
 - Provide secure JWT-based authentication and authorization
@@ -27,7 +27,7 @@ To deliver a robust, secure, and scalable API backend that enables BVMW to effic
 
 ## 2. Problem Statement
 
-BVMW currently lacks a centralized, digital platform for conducting member surveys, resulting in:
+currently lacks a centralized, digital platform for conducting member surveys, resulting in:
 - Manual, error-prone survey distribution via email
 - Low response rates (< 15%)
 - Delayed insights due to manual data processing
@@ -49,17 +49,17 @@ BVMW currently lacks a centralized, digital platform for conducting member surve
 - **Goals:** Maintain system stability and performance
 
 ### 3.3 Organization Manager
-- **Role:** BVMW staff managing member organizations
+- **Role:** staff managing member organizations
 - **Needs:** Organization CRUD operations, member management
 - **Goals:** Efficient organization onboarding and management
 
 ### 3.4 Survey Creator
-- **Role:** BVMW staff creating surveys
+- **Role:** staff creating surveys
 - **Needs:** Survey creation tools, question management, distribution controls
 - **Goals:** Create engaging surveys quickly
 
 ### 3.5 Survey Respondent
-- **Role:** BVMW member completing surveys
+- **Role:** member completing surveys
 - **Needs:** Fast response submission, progress tracking
 - **Goals:** Complete surveys efficiently
 
@@ -421,7 +421,7 @@ CREATE INDEX idx_responses_completed ON survey_responses(completed_at);
 ### 9.3 Constraints
 - GDPR compliance required
 - German language support mandatory
-- Must integrate with existing BVMW systems
+- Must integrate with existing systems
 - Budget constraint: €50,000
 
 ---

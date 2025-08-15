@@ -154,3 +154,50 @@ target_cpu_utilization: 70
 dr_enabled: true
 dr_region: eu-west-1
 dr_sync_interval: 3600
+
+# Frontend Configuration
+frontend_path: /opt/survey-platform/frontend
+frontend_build_command: npm run build
+frontend_node_version: '20'
+frontend_npm_version: '10'
+frontend_api_url: https://api.survey-platform.com
+frontend_api_timeout: 30000
+frontend_enable_analytics: true
+frontend_enable_debug: false
+frontend_enable_mock_data: false
+frontend_default_locale: de
+frontend_supported_locales: de,en
+
+# Frontend Performance
+frontend_enable_compression: true
+frontend_enable_caching: true
+frontend_cache_max_age: 31536000  # 1 year for static assets
+frontend_cache_html_max_age: 0    # No cache for HTML
+
+# Frontend Security
+frontend_csp_enabled: true
+frontend_csp_report_uri: https://csp-report.survey-platform.com
+frontend_frame_options: DENY
+frontend_content_type_options: nosniff
+frontend_xss_protection: '1; mode=block'
+
+# Frontend CDN
+frontend_cdn_enabled: true
+frontend_cdn_url: https://cdn.survey-platform.com
+frontend_static_assets_url: https://static.survey-platform.com
+
+# Frontend Build Optimization
+frontend_build_source_maps: false
+frontend_build_minify: true
+frontend_build_tree_shake: true
+frontend_build_chunk_size_limit: 500  # KB
+
+# Frontend External Services
+frontend_sentry_dsn: "{{ vault_prod_frontend_sentry_dsn | default('') }}"
+frontend_google_analytics_id: "{{ vault_prod_ga_id | default('') }}"
+
+# Frontend Deployment
+frontend_deployment_strategy: blue-green
+frontend_health_check_path: /health
+frontend_readiness_check_path: /ready
+frontend_warm_up_requests: 10

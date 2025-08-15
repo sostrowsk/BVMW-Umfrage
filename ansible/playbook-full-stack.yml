@@ -1,0 +1,318 @@
+---
+- name: Deploy Full Stack Survey Platform
+  hosts: all
+  become: yes
+  vars:
+    project_name: survey
+    backend_path: /opt/{{ project_name }}/backend
+    frontend_path: /opt/{{ project_name }}/frontend
+    nginx_path: /etc/nginx
+    docker_compose_version: 2.23.3
+    python_version: "3.11"
+    postgres_version: "15"
+    nodejs_version: "20"
+    frontend_build_path: /opt/{{ project_name }}/frontend/dist
+    frontend_serve_path: /var/www/{{ project_name }}
+  
+  tasks:
+    # ============================================
+    # System Setup
+    # ============================================
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+    
+    - name: Install system dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - git
+          - build-essential
+          - python3-pip
+          - python3-dev
+          - libpq-dev
+          - software-properties-common
+          - nginx
+          - certbot
+          - python3-certbot-nginx
+        state: present
+    
+    # ============================================
+    # Docker Setup
+    # ============================================
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+    
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+    
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+    
+    - name: Install Docker Compose
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-linux-x86_64"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+    
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+    
+    # ============================================
+    # Node.js Setup for Frontend
+    # ============================================
+    - name: Add NodeSource GPG key
+      apt_key:
+        url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+        state: present
+    
+    - name: Add NodeSource repository
+      apt_repository:
+        repo: "deb https://deb.nodesource.com/node_{{ nodejs_version }}.x {{ ansible_distribution_release }} main"
+        state: present
+    
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+    
+    - name: Install global npm packages
+      npm:
+        name: "{{ item }}"
+        global: yes
+      loop:
+        - npm@latest
+        - yarn
+        - pm2
+    
+    # ============================================
+    # Project Setup
+    # ============================================
+    - name: Create project directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+      loop:
+        - /opt/{{ project_name }}
+        - "{{ backend_path }}"
+        - "{{ frontend_path }}"
+        - "{{ frontend_serve_path }}"
+        - /opt/{{ project_name }}/logs
+        - /opt/{{ project_name }}/backups
+    
+    - name: Clone or update repository
+      git:
+        repo: "{{ git_repository }}"
+        dest: /opt/{{ project_name }}/repo
+        version: "{{ git_branch | default('main') }}"
+        force: yes
+      become_user: "{{ ansible_user }}"
+    
+    # ============================================
+    # Backend Deployment
+    # ============================================
+    - name: Copy backend files
+      synchronize:
+        src: /opt/{{ project_name }}/repo/
+        dest: "{{ backend_path }}/"
+        delete: yes
+        rsync_opts:
+          - "--exclude=frontend"
+          - "--exclude=node_modules"
+          - "--exclude=.git"
+          - "--exclude=*.pyc"
+          - "--exclude=__pycache__"
+      delegate_to: "{{ inventory_hostname }}"
+    
+    - name: Create backend .env file
+      template:
+        src: templates/backend.env.j2
+        dest: "{{ backend_path }}/.env"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0600'
+    
+    - name: Build and start backend with Docker Compose
+      docker_compose:
+        project_src: "{{ backend_path }}"
+        state: present
+        build: yes
+        recreate: "{{ force_recreate | default('no') }}"
+      environment:
+        COMPOSE_PROJECT_NAME: "{{ project_name }}_backend"
+    
+    # ============================================
+    # Frontend Deployment
+    # ============================================
+    - name: Copy frontend files
+      synchronize:
+        src: /opt/{{ project_name }}/repo/frontend/
+        dest: "{{ frontend_path }}/"
+        delete: yes
+        rsync_opts:
+          - "--exclude=node_modules"
+          - "--exclude=dist"
+          - "--exclude=.git"
+      delegate_to: "{{ inventory_hostname }}"
+    
+    - name: Create frontend .env file
+      template:
+        src: templates/frontend.env.j2
+        dest: "{{ frontend_path }}/.env"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+    
+    - name: Install frontend dependencies
+      npm:
+        path: "{{ frontend_path }}"
+        state: present
+      become_user: "{{ ansible_user }}"
+    
+    - name: Build frontend for production
+      command: npm run build
+      args:
+        chdir: "{{ frontend_path }}"
+      environment:
+        NODE_ENV: production
+        VITE_API_URL: "{{ frontend_api_url }}"
+      become_user: "{{ ansible_user }}"
+    
+    - name: Copy built frontend to serve directory
+      synchronize:
+        src: "{{ frontend_path }}/dist/"
+        dest: "{{ frontend_serve_path }}/"
+        delete: yes
+      delegate_to: "{{ inventory_hostname }}"
+    
+    - name: Set correct permissions for frontend files
+      file:
+        path: "{{ frontend_serve_path }}"
+        owner: www-data
+        group: www-data
+        recurse: yes
+    
+    # ============================================
+    # Nginx Configuration
+    # ============================================
+    - name: Remove default nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+    
+    - name: Create nginx configuration for frontend
+      template:
+        src: templates/nginx-frontend.conf.j2
+        dest: "/etc/nginx/sites-available/{{ project_name }}"
+        owner: root
+        group: root
+        mode: '0644'
+    
+    - name: Enable nginx site
+      file:
+        src: "/etc/nginx/sites-available/{{ project_name }}"
+        dest: "/etc/nginx/sites-enabled/{{ project_name }}"
+        state: link
+    
+    - name: Test nginx configuration
+      command: nginx -t
+      register: nginx_test
+      changed_when: false
+    
+    - name: Reload nginx
+      systemd:
+        name: nginx
+        state: reloaded
+      when: nginx_test.rc == 0
+    
+    # ============================================
+    # SSL Certificate (Production Only)
+    # ============================================
+    - name: Obtain SSL certificate with Certbot
+      command: >
+        certbot --nginx -d {{ domain_name }}
+        --non-interactive --agree-tos
+        --email {{ admin_email }}
+        --redirect
+      when: 
+        - use_ssl | default(false)
+        - domain_name is defined
+      ignore_errors: yes
+    
+    # ============================================
+    # Health Checks
+    # ============================================
+    - name: Wait for backend to be healthy
+      uri:
+        url: "http://localhost:{{ backend_port | default(8000) }}/docs"
+        status_code: 200
+      register: backend_health
+      until: backend_health.status == 200
+      retries: 30
+      delay: 10
+    
+    - name: Check frontend is accessible
+      uri:
+        url: "http://localhost:{{ frontend_port | default(80) }}"
+        status_code: 200
+      register: frontend_health
+      until: frontend_health.status == 200
+      retries: 10
+      delay: 5
+    
+    # ============================================
+    # Monitoring and Logging
+    # ============================================
+    - name: Setup log rotation for application logs
+      template:
+        src: templates/logrotate.conf.j2
+        dest: "/etc/logrotate.d/{{ project_name }}"
+        owner: root
+        group: root
+        mode: '0644'
+    
+    - name: Create monitoring script
+      template:
+        src: templates/health-check.sh.j2
+        dest: "/opt/{{ project_name }}/health-check.sh"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+    
+    - name: Setup health check cron job
+      cron:
+        name: "Health check for {{ project_name }}"
+        minute: "*/5"
+        job: "/opt/{{ project_name }}/health-check.sh"
+        user: "{{ ansible_user }}"
+    
+  handlers:
+    - name: restart nginx
+      systemd:
+        name: nginx
+        state: restarted
+    
+    - name: restart docker
+      systemd:
+        name: docker
+        state: restarted
