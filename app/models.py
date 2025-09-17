@@ -47,7 +47,10 @@ class Survey(Base):
     description = Column(String)
     version = Column(String(10))
     config = Column(JSON, nullable=False)
-    status = Column(String(50), default="draft")
+    status = Column(String(50), default="planned")
+    start_date = Column(DateTime(timezone=True))
+    end_date = Column(DateTime(timezone=True))
+    max_responses = Column(Integer)
     created_by = Column(UUID(as_uuid=True), ForeignKey("members.id", ondelete="SET NULL"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     published_at = Column(DateTime(timezone=True))
@@ -74,3 +77,23 @@ class SurveyResponse(Base):
     survey = relationship("Survey", back_populates="responses")
     member = relationship("Member", back_populates="responses")
     organization = relationship("Organization", back_populates="responses")
+
+
+class SurveyInvitation(Base):
+    __tablename__ = "survey_invitations"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    survey_id = Column(UUID(as_uuid=True), ForeignKey("surveys.id", ondelete="CASCADE"), index=True)
+    token = Column(String(255), unique=True, nullable=False)
+    token_hash = Column(String(255), nullable=False, index=True)
+    member_id = Column(UUID(as_uuid=True), ForeignKey("members.id", ondelete="SET NULL"), index=True)
+    email = Column(String(255))
+    expires_at = Column(DateTime(timezone=True))
+    used_at = Column(DateTime(timezone=True))
+    max_uses = Column(Integer, default=1)
+    use_count = Column(Integer, default=0)
+    invitation_metadata = Column("metadata", JSON)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    survey = relationship("Survey", backref="invitations")
+    member = relationship("Member", backref="invitations")
