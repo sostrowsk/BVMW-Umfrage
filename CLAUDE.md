@@ -137,3 +137,7 @@ Configured in `frontend/src/api/client.ts`
 3. Create Alembic migration (when implemented)
 4. Update Pydantic schemas
 5. Test with fresh database initialization
+- Pubbeteer: http://localhost:5173/
+TestUser: test@example.comPassword1234!
+TextUserPassword: Password1234!
+- use tmp/start_server.sh to start / restart the server!

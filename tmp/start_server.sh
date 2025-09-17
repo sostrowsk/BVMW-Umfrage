@@ -5,6 +5,9 @@ pkill -f "vite" 2>/dev/null || true
 lsof -ti:8000 | xargs -r kill -9 2>/dev/null || true
 lsof -ti:5173 | xargs -r kill -9 2>/dev/null || true
 sleep 2
+echo "Clearing frontend cache..."
+rm -rf frontend/node_modules/.vite 2>/dev/null || true
+rm -rf frontend/dist 2>/dev/null || true
 echo "Starting PostgreSQL database in Docker..."
 docker-compose up -d db
 sleep 3
