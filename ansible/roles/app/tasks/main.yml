@@ -1,0 +1,63 @@
+---
+- name: Create project directory
+  file:
+    path: "{{ project_path }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Copy repository files
+  synchronize:
+    src: "{{ playbook_dir }}/../"
+    dest: "{{ project_path }}"
+    rsync_opts:
+      - "--exclude=.git"
+      - "--exclude=__pycache__"
+      - "--exclude=node_modules"
+      - "--exclude=.env"
+      - "--exclude=*.pyc"
+
+- name: Create .env file from template
+  template:
+    src: env.j2
+    dest: "{{ project_path }}/.env"
+    mode: '0600'
+    owner: "{{ ansible_user }}"
+
+- name: Pull latest Docker images
+  docker_image:
+    name: "{{ item }}"
+    source: pull
+  with_items:
+    - postgres:15-alpine
+    - redis:7-alpine
+    - nginx:alpine
+
+- name: Build application images
+  command: docker-compose -f {{ docker_compose_file }} build
+  args:
+    chdir: "{{ project_path }}"
+
+- name: Stop existing containers
+  command: docker-compose -f {{ docker_compose_file }} down
+  args:
+    chdir: "{{ project_path }}"
+  ignore_errors: yes
+
+- name: Start containers
+  command: docker-compose -f {{ docker_compose_file }} up -d
+  args:
+    chdir: "{{ project_path }}"
+
+- name: Wait for application to be ready
+  wait_for:
+    port: 8000
+    delay: 10
+    timeout: 60
+
+- name: Run database migrations
+  command: docker-compose -f {{ docker_compose_file }} exec -T backend poetry run alembic upgrade head
+  args:
+    chdir: "{{ project_path }}"
+  ignore_errors: yes

@@ -1,0 +1,49 @@
+---
+- name: Create backup directory
+  file:
+    path: "{{ backup_path }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Create backup script
+  copy:
+    content: |
+      #!/bin/bash
+      BACKUP_DIR="{{ backup_path }}"
+      TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+      BACKUP_FILE="${BACKUP_DIR}/survey_backup_${TIMESTAMP}.sql.gz"
+
+      docker exec survey-db pg_dump -U {{ db_user }} {{ db_name }} | gzip > ${BACKUP_FILE}
+
+      find ${BACKUP_DIR} -name "survey_backup_*.sql.gz" -mtime +7 -delete
+
+      echo "Backup completed: ${BACKUP_FILE}"
+    dest: "{{ backup_path }}/backup.sh"
+    mode: '0755'
+    owner: "{{ ansible_user }}"
+
+- name: Setup daily backup cron job
+  cron:
+    name: "Daily database backup"
+    minute: "0"
+    hour: "2"
+    job: "{{ backup_path }}/backup.sh >> {{ backup_path }}/backup.log 2>&1"
+    user: "{{ ansible_user }}"
+
+- name: Create restore script
+  copy:
+    content: |
+      #!/bin/bash
+      if [ -z "$1" ]; then
+        echo "Usage: $0 <backup_file>"
+        exit 1
+      fi
+
+      echo "Restoring from $1..."
+      gunzip -c $1 | docker exec -i survey-db psql -U {{ db_user }} {{ db_name }}
+      echo "Restore completed"
+    dest: "{{ backup_path }}/restore.sh"
+    mode: '0755'
+    owner: "{{ ansible_user }}"
