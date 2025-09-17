@@ -16,10 +16,12 @@ import Dashboard from "./pages/Dashboard";
 import SurveyList from "./pages/SurveyList";
 import SurveyDetail from "./pages/SurveyDetail";
 import SurveyEditor from "./pages/SurveyEditor";
+import SurveyResults from "./pages/SurveyResults";
 import Members from "./pages/Members";
 import Organizations from "./pages/Organizations";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import PublicSurveyPage from "./pages/PublicSurveyPage";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -38,6 +40,7 @@ function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/survey/:token" element={<PublicSurveyPage />} />
                 <Route
                   path="/"
                   element={
@@ -49,9 +52,10 @@ function App() {
                   <Route index element={<Navigate to="/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="surveys" element={<SurveyList />} />
-                  <Route path="surveys/new" element={<SurveyEditor />} />
+                  <Route path="surveys/create" element={<SurveyEditor />} />
                   <Route path="surveys/:id" element={<SurveyDetail />} />
                   <Route path="surveys/:id/edit" element={<SurveyEditor />} />
+                  <Route path="surveys/:id/results" element={<SurveyResults />} />
                   <Route path="members" element={<Members />} />
                   <Route path="organizations" element={<Organizations />} />
                   <Route path="analytics" element={<Analytics />} />

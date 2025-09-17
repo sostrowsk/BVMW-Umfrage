@@ -38,16 +38,20 @@ export default function MemberForm({
         email: member.email || "",
         password: "",
         role: member.role || "member",
-        organizationId: member.organizationId || "",
+        organizationId: member.organization_id || member.organizationId || "",
         preferences: member.preferences || {},
       });
     }
   }, [member]);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const dataToSubmit = { ...formData };
+    const dataToSubmit: any = { ...formData };
     if (!dataToSubmit.password || member) {
       delete dataToSubmit.password;
+    }
+    if (dataToSubmit.organizationId) {
+      dataToSubmit.organization_id = dataToSubmit.organizationId;
+      delete dataToSubmit.organizationId;
     }
     onSubmit(dataToSubmit);
   };

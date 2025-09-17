@@ -45,6 +45,18 @@ export const getAnalytics = async (
   );
   return response.data;
 };
+export const getSurveyResponses = async (
+  surveyId: string,
+  skip = 0,
+  limit = 100,
+): Promise<SurveyResponse[]> => {
+  const response = await axiosClient.get<SurveyResponse[]>(
+    `/surveys/${surveyId}/responses`,
+    { params: { skip, limit } },
+  );
+  return response.data;
+};
+export const getSurveyAnalytics = getAnalytics;
 export const surveysApi = {
   getSurveys,
   getSurvey,
@@ -52,4 +64,5 @@ export const surveysApi = {
   updateSurvey,
   submitResponse: submitSurveyResponse,
   getAnalytics,
+  getSurveyResponses,
 };

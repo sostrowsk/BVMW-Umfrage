@@ -13,6 +13,7 @@ interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => void;
   register: (email: string, password: string, name?: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
@@ -58,8 +59,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.setItem("access_token", tokenData.access_token);
     setUser(newUser);
   };
+  const refreshUser = async () => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      try {
+        const userData = await authApi.getCurrentUser();
+        setUser(userData);
+      } catch (error) {
+        console.error("Failed to refresh user:", error);
+      }
+    }
+  };
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

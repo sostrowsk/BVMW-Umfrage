@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   FileText,
   BarChart3,
+  Building,
   Users,
   Settings,
   Menu,
@@ -31,6 +32,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, t }) => {
       path: "/analytics",
       icon: BarChart3,
       label: t("analytics"),
+    },
+    {
+      path: "/organizations",
+      icon: Building,
+      label: t("organizations"),
     },
     {
       path: "/members",

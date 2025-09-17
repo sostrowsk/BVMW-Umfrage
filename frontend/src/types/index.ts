@@ -22,12 +22,17 @@ export interface Survey {
   description?: string;
   config: SurveyConfig;
   version?: string;
-  status: "draft" | "published" | "closed";
+  status: "planned" | "active" | "closed";
+  start_date?: string;
+  end_date?: string;
+  max_responses?: number;
   created_by_id?: string;
   created_at: string;
   published_at?: string;
   closed_at?: string;
+  response_count?: number;
   responseCount?: number;
+  estimated_time?: number;
 }
 export interface SurveyResponse {
   id: string;
@@ -40,15 +45,26 @@ export interface SurveyResponse {
   completed_at?: string;
   impact_score?: number;
   meta?: Record<string, any>;
+  created_at?: string;
 }
 export interface SurveyConfig {
   questions: Question[];
   estimatedTime?: number;
+  welcomePage?: {
+    title: string;
+    description: string;
+  };
+  thankyouPage?: {
+    title: string;
+    description: string;
+  };
   settings?: {
     allowAnonymous?: boolean;
     multipleSubmissions?: boolean;
     showProgressBar?: boolean;
   };
+  allowAnonymous?: boolean;
+  requiresAuth?: boolean;
 }
 export interface Question {
   id: string;
@@ -62,7 +78,7 @@ export interface Question {
     | "date";
   title: string;
   description?: string;
-  required?: boolean;
+  required: boolean;
   options?: QuestionOption[];
   validation?: QuestionValidation;
   conditionalLogic?: ConditionalLogic;
@@ -100,6 +116,10 @@ export interface MemberCreate {
 export interface SurveyCreate {
   title: string;
   description?: string;
+  status?: string;
+  start_date?: string;
+  end_date?: string;
+  max_responses?: number;
   config: SurveyConfig;
 }
 export interface SurveyResponseCreate {
@@ -109,5 +129,7 @@ export interface SurveyResponseCreate {
 export interface SurveyAnalytics {
   survey_id: string;
   title: string;
+  status: string;
+  max_responses: number | null;
   response_count: number;
 }

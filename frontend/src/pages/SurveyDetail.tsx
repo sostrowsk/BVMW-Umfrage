@@ -221,7 +221,7 @@ export default function SurveyDetail() {
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              <span>{survey.responseCount || 0} responses</span>
+              <span>{survey.response_count || survey.responseCount || 0} responses</span>
             </div>
             <div className="flex items-center gap-2">
               <span>{questions.length} questions</span>

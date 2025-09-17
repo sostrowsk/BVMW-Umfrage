@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { surveysApi } from "../api/surveys";
 import { useAuth } from "../features/auth/AuthContext";
+import { useLanguage } from "../contexts/LanguageContext";
 import {
   FileText,
   Search,
@@ -14,10 +15,14 @@ import {
   Clock,
   Grid,
   List,
+  Edit,
+  BarChart3,
 } from "lucide-react";
+import { formatDateForDisplay, getUserTimezone } from "../utils/dateUtils";
 const SurveyList: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -37,20 +42,17 @@ const SurveyList: React.FC = () => {
       statusFilter === "all" || survey.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+  const userTimezone = getUserTimezone(user?.preferences);
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("de-DE", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    return formatDateForDisplay(dateString, userTimezone, "date");
   };
   return (
     <div className="px-4 sm:px-0">
       <div className="sm:flex sm:items-center sm:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Umfragen</h1>
+          <h1 className="text-3xl font-bold text-gray-800">{t("surveys")}</h1>
           <p className="mt-2 text-gray-600">
-            Verwalten Sie Ihre Umfragen und nehmen Sie an aktiven Umfragen teil.
+            {t("manageSurveys")}
           </p>
         </div>
         {user?.role === "admin" && (
@@ -60,7 +62,7 @@ const SurveyList: React.FC = () => {
               className="btn-primary"
             >
               <Plus className="mr-2 h-5 w-5" />
-              Neue Umfrage
+              {t("createSurvey")}
             </button>
           </div>
         )}
@@ -76,7 +78,7 @@ const SurveyList: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input-field pl-10"
-              placeholder="Umfragen suchen..."
+              placeholder={t("search")}
             />
           </div>
           <div className="flex items-center gap-3">
@@ -86,10 +88,10 @@ const SurveyList: React.FC = () => {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="input-field cursor-pointer"
             >
-              <option value="all">Alle Status</option>
-              <option value="published">Aktiv</option>
-              <option value="draft">Entwurf</option>
-              <option value="closed">Geschlossen</option>
+              <option value="all">{t("allStatus")}</option>
+              <option value="planned">{t("planned")}</option>
+              <option value="active">{t("active")}</option>
+              <option value="closed">{t("closed")}</option>
             </select>
           </div>
           <div className="flex items-center justify-end gap-2">
@@ -119,7 +121,7 @@ const SurveyList: React.FC = () => {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
-          <p className="mt-4 text-sm text-gray-500">Lade Umfragen...</p>
+          <p className="mt-4 text-sm text-gray-500">{t("loadingSurveys")}</p>
         </div>
       ) : error ? (
         <div className="text-center py-12 card">
@@ -143,21 +145,47 @@ const SurveyList: React.FC = () => {
                   <div className="p-2 bg-blue-100 rounded-lg">
                     <FileText className="h-5 w-5 text-blue-600" />
                   </div>
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      survey.status === "published"
+                  <div className="flex items-center gap-2">
+                    {user?.role === "admin" && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/surveys/${survey.id}/results`);
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                          title="Ergebnisse anzeigen"
+                        >
+                          <BarChart3 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/surveys/${survey.id}/edit`);
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                          title="Bearbeiten"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                      </>
+                    )}
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      survey.status === "active"
                         ? "bg-green-100 text-green-700"
-                        : survey.status === "draft"
+                        : survey.status === "planned"
                           ? "bg-amber-100 text-amber-700"
                           : "bg-gray-100 text-gray-700"
                     }`}
                   >
-                    {survey.status === "published"
-                      ? "Aktiv"
-                      : survey.status === "draft"
-                        ? "Entwurf"
-                        : "Geschlossen"}
-                  </span>
+                    {survey.status === "active"
+                      ? t("active")
+                      : survey.status === "planned"
+                        ? t("planned")
+                        : t("closed")}
+                    </span>
+                  </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">
                   {survey.title}
@@ -175,7 +203,7 @@ const SurveyList: React.FC = () => {
                     </span>
                     <span className="flex items-center gap-1">
                       <Users className="w-3 h-3" />
-                      {Math.floor(Math.random() * 200)} Antworten
+                      {survey.response_count || 0} {t("responses")}
                     </span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -204,18 +232,18 @@ const SurveyList: React.FC = () => {
                           </h3>
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              survey.status === "published"
+                              survey.status === "active"
                                 ? "bg-green-100 text-green-700"
-                                : survey.status === "draft"
+                                : survey.status === "planned"
                                   ? "bg-amber-100 text-amber-700"
                                   : "bg-gray-100 text-gray-700"
                             }`}
                           >
-                            {survey.status === "published"
-                              ? "Aktiv"
-                              : survey.status === "draft"
-                                ? "Entwurf"
-                                : "Geschlossen"}
+                            {survey.status === "active"
+                              ? t("active")
+                              : survey.status === "planned"
+                                ? t("planned")
+                                : t("closed")}
                           </span>
                         </div>
                         {survey.description && (
@@ -237,12 +265,38 @@ const SurveyList: React.FC = () => {
                           )}
                           <span className="flex items-center gap-1">
                             <Users className="w-3 h-3" />
-                            {Math.floor(Math.random() * 200)} Antworten
+                            {survey.response_count || 0} {t("responses")}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                    <div className="flex items-center gap-2">
+                      {user?.role === "admin" && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/surveys/${survey.id}/results`);
+                            }}
+                            className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                            title="Ergebnisse anzeigen"
+                          >
+                            <BarChart3 className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/surveys/${survey.id}/edit`);
+                            }}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                            title="Bearbeiten"
+                          >
+                            <Edit className="h-5 w-5" />
+                          </button>
+                        </>
+                      )}
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    </div>
                   </div>
                 </div>
               ))}

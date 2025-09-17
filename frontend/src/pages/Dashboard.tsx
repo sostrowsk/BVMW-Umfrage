@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { surveysApi } from "../api/surveys";
 import { useAuth } from "../features/auth/AuthContext";
+import { useLanguage } from "../contexts/LanguageContext";
 import { Card, Button } from "../components/ui";
 import { FilePlus2, ChevronRight, Clock, Users, BarChart3 } from "lucide-react";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const { data: surveys, isLoading } = useQuery({
     queryKey: ["surveys"],
@@ -21,10 +23,10 @@ const Dashboard: React.FC = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h2 className="text-3xl font-bold text-gray-800">
-              Available Surveys
+              {t("availableSurveys")}
             </h2>
             <p className="text-gray-600 mt-1">
-              Select a survey to participate or view results
+              {t("selectSurveyToParticipate")}
             </p>
           </div>
           {user?.role === "admin" && (
@@ -33,7 +35,7 @@ const Dashboard: React.FC = () => {
               variant="primary"
             >
               <FilePlus2 size={20} className="mr-2" />
-              Create Survey
+              {t("createSurvey")}
             </Button>
           )}
         </div>
@@ -41,7 +43,7 @@ const Dashboard: React.FC = () => {
         {isLoading ? (
           <div className="flex flex-col justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mb-4"></div>
-            <p className="text-gray-500">Loading surveys...</p>
+            <p className="text-gray-500">{t("loadingSurveys")}</p>
           </div>
         ) : surveys && surveys.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -56,9 +58,9 @@ const Dashboard: React.FC = () => {
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <BarChart3 className="h-6 w-6 text-blue-600" />
                     </div>
-                    {survey.status === "published" && (
+                    {survey.status === "active" && (
                       <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                        Active
+                        {t("active")}
                       </span>
                     )}
                   </div>
@@ -67,22 +69,22 @@ const Dashboard: React.FC = () => {
                     {survey.title}
                   </h3>
                   <p className="text-gray-600 mb-4 line-clamp-2">
-                    {survey.description || "No description available"}
+                    {survey.description || t("noDescription")}
                   </p>
 
                   <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                     <div className="flex items-center gap-1">
                       <Clock size={16} />
-                      <span>{survey.config?.estimatedTime || 10} min</span>
+                      <span>{survey.config?.estimatedTime || 10} {t("min")}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Users size={16} />
-                      <span>{survey.responseCount || 0} responses</span>
+                      <span>{survey.response_count || 0} {t("responses")}</span>
                     </div>
                   </div>
 
                   <div className="text-blue-600 font-semibold flex items-center group">
-                    Take Survey
+                    {t("takeSurvey")}
                     <ChevronRight
                       size={20}
                       className="ml-1 group-hover:translate-x-1 transition-transform"
@@ -99,10 +101,10 @@ const Dashboard: React.FC = () => {
                 <BarChart3 className="h-8 w-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                No surveys available
+                {t("noSurveysAvailable")}
               </h3>
               <p className="text-gray-600 mb-6">
-                There are no surveys to display at the moment.
+                {t("noSurveysDescription")}
               </p>
               {user?.role === "admin" && (
                 <Button
@@ -110,7 +112,7 @@ const Dashboard: React.FC = () => {
                   variant="primary"
                 >
                   <FilePlus2 size={20} className="mr-2" />
-                  Create your first survey
+                  {t("createSurvey")}
                 </Button>
               )}
             </Card>
