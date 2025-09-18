@@ -162,3 +162,6 @@ override.tf.json
 *_override.tf.json
 .terraformrc
 terraform.rc
+
+# MCP configuration (contains sensitive tokens)
+.mcp.json
