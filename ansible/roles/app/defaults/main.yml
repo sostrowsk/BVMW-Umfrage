@@ -1,0 +1,9 @@
+---
+# Default configuration for the application role. Override in inventory to
+# adapt deployment specifics without touching the role itself.
+app_db_host: host.docker.internal
+app_db_port: 5432
+app_db_user: user
+app_db_password: password
+app_db_name: survey_platform
+app_db_wait_host: 127.0.0.1

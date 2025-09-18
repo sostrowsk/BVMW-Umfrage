@@ -1,4 +1,9 @@
 ---
+- name: ensure_rsync_available
+  apt:
+    name: rsync
+    state: present
+
 - name: create_directory
   file:
     path: "{{ app_dir }}"
@@ -34,10 +39,16 @@
   copy:
     dest: "{{ app_dir }}/.env"
     content: |
-      DATABASE_URL=postgresql://user:password@host.docker.internal:5432/survey_platform
+      DATABASE_URL=postgresql://{{ app_db_user }}:{{ app_db_password }}@{{ app_db_host }}:{{ app_db_port }}/{{ app_db_name }}
       SECRET_KEY={{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}
       ALGORITHM=HS256
       ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+- name: wait_for_database
+  wait_for:
+    host: "{{ app_db_wait_host }}"
+    port: "{{ app_db_port | int }}"
+    timeout: 60
 
 - name: build_containers
   command: docker-compose build

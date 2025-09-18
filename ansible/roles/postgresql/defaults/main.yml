@@ -1,0 +1,11 @@
+---
+# Default configuration values for the PostgreSQL role. Override them from
+# inventory/group vars to adapt credentials or version per environment.
+postgresql_version: 15
+postgresql_db_name: survey_platform
+postgresql_db_owner: user
+postgresql_db_password: password
+postgresql_conf_dir: "/etc/postgresql/{{ postgresql_version }}/main"
+postgresql_conf_path: "{{ postgresql_conf_dir }}/postgresql.conf"
+postgresql_hba_path: "{{ postgresql_conf_dir }}/pg_hba.conf"
+postgresql_schema_marker_path: "/var/lib/postgresql/.{{ postgresql_db_name }}_schema_initialized"

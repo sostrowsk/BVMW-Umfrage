@@ -16,27 +16,27 @@
 - name: create_user
   become_user: postgres
   postgresql_user:
-    name: user
-    password: password
+    name: "{{ postgresql_db_owner }}"
+    password: "{{ postgresql_db_password }}"
     role_attr_flags: CREATEDB,NOSUPERUSER
 
 - name: create_database
   become_user: postgres
   postgresql_db:
-    name: survey_platform
-    owner: user
+    name: "{{ postgresql_db_name }}"
+    owner: "{{ postgresql_db_owner }}"
     encoding: UTF-8
 
 - name: configure_listen
   lineinfile:
-    path: /etc/postgresql/15/main/postgresql.conf
+    path: "{{ postgresql_conf_path }}"
     regexp: '^#?listen_addresses'
     line: "listen_addresses = '*'"
   notify: restart_postgresql
 
 - name: configure_auth
   lineinfile:
-    path: /etc/postgresql/15/main/pg_hba.conf
+    path: "{{ postgresql_hba_path }}"
     line: "host    all             all             172.0.0.0/8             md5"
     insertafter: "^host.*all.*all.*127"
   notify: restart_postgresql
@@ -51,5 +51,19 @@
 
 - name: init_schema
   become_user: postgres
-  shell: psql -d survey_platform -f /tmp/init.sql
-  ignore_errors: yes
+  shell: |
+    set -euo pipefail
+    psql -d "{{ postgresql_db_name }}" -f /tmp/init.sql
+    touch "{{ postgresql_schema_marker_path }}"
+  args:
+    creates: "{{ postgresql_schema_marker_path }}"
+
+- name: grant_permissions
+  become_user: postgres
+  postgresql_query:
+    db: "{{ postgresql_db_name }}"
+    query: |
+      GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "{{ postgresql_db_owner }}";
+      GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "{{ postgresql_db_owner }}";
+      GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO "{{ postgresql_db_owner }}";
+      GRANT CREATE ON SCHEMA public TO "{{ postgresql_db_owner }}";

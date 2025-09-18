@@ -6,6 +6,7 @@
     app_dir: /opt/bvmw-survey
     domain: umfrage.koeln-bvmw.de
     email: admin@koeln-bvmw.de
+    app_db_wait_host: localhost
 
   roles:
     - docker
