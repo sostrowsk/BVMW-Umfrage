@@ -1,0 +1,5 @@
+---
+# Upstream endpoints that nginx should proxy to. Override as needed per env.
+frontend_upstream: http://127.0.0.1:8080
+backend_upstream: http://127.0.0.1:8000
+docs_upstream: "{{ backend_upstream }}/docs"
