@@ -232,7 +232,7 @@ export default function SurveyDetail() {
           {questions.map((question: any, index: number) => (
             <div key={question.id} className="mb-6">
               <label className="block text-gray-700 font-bold mb-3">
-                {question.text}
+                {question.title || question.text}
                 {question.required && (
                   <span className="text-red-500 ml-1">*</span>
                 )}

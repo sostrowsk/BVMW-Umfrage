@@ -78,6 +78,15 @@ export default function SurveyResults() {
         questionResponses.forEach((answer) => {
           counts[answer] = (counts[answer] || 0) + 1;
         });
+        if (!questionResponses.length) {
+          return {
+            ...question,
+            chartType: "pie",
+            data: [],
+            responseCount: 0,
+          };
+        }
+
         const data = Object.entries(counts).map(([value, count]) => ({
           name: question.options?.find((o: any) => o.value === value)?.label || value,
           value: count,
@@ -99,10 +108,19 @@ export default function SurveyResults() {
             });
           }
         });
+        if (!questionResponses.length) {
+          return {
+            ...question,
+            chartType: "bar",
+            data: [],
+            responseCount: 0,
+          };
+        }
+
         const data = Object.entries(counts).map(([value, count]) => ({
           name: question.options?.find((o: any) => o.value === value)?.label || value,
           value: count,
-          percentage: Math.round((count / responses.length) * 100),
+          percentage: Math.round((count / questionResponses.length) * 100),
         }));
         return {
           ...question,
@@ -114,6 +132,14 @@ export default function SurveyResults() {
       if (question.type === "boolean") {
         const yesCount = questionResponses.filter((a) => a === true).length;
         const noCount = questionResponses.filter((a) => a === false).length;
+        if (!questionResponses.length) {
+          return {
+            ...question,
+            chartType: "pie",
+            data: [],
+            responseCount: 0,
+          };
+        }
         return {
           ...question,
           chartType: "pie",
@@ -144,8 +170,9 @@ export default function SurveyResults() {
     if (!responses || !survey) return;
     const headers = ["Response ID", "Member ID", "Organization ID", "Submitted At"];
     const questions = survey.config?.questions || [];
-    questions.forEach((q: any) => {
-      headers.push(q.text);
+    questions.forEach((q: any, idx: number) => {
+      const label = q.title || q.text || `Frage ${idx + 1}`;
+      headers.push(label);
     });
     const rows = responses.map((response) => {
       const row = [
@@ -295,7 +322,7 @@ export default function SurveyResults() {
             <div key={index} className="card p-6">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  {index + 1}. {result.text}
+                  {index + 1}. {result.title || result.text}
                 </h3>
                 <p className="text-sm text-gray-600">
                   {result.responseCount} Antworten • Typ: {result.type}

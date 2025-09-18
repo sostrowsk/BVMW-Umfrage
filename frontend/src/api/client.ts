@@ -23,8 +23,15 @@ axiosClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("access_token");
-      window.location.href = "/login";
+      const requestUrl = error.config?.url ?? "";
+      const isAuthRequest = /\/auth\/token/i.test(requestUrl || "");
+
+      if (!isAuthRequest) {
+        localStorage.removeItem("access_token");
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+      }
     }
     return Promise.reject(error);
   },

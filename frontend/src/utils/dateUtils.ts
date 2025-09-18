@@ -100,23 +100,49 @@ export const convertLocalToUTC = (
   timezone?: string
 ): string => {
   if (!localDateTimeString) return "";
-  
+
   const userTimezone = timezone || getUserTimezone();
   const [datePart, timePart] = localDateTimeString.split("T");
   const [year, month, day] = datePart.split("-").map(Number);
   const [hour, minute] = timePart.split(":").map(Number);
-  
-  const localDate = new Date(year, month - 1, day, hour, minute);
-  
-  const tzOffset = getTimezoneOffset(userTimezone, localDate);
-  const utcDate = new Date(localDate.getTime() - tzOffset * 60000);
-  
-  return utcDate.toISOString();
+
+  const zonedBase = new Date(Date.UTC(year, month - 1, day, hour, minute));
+  const offsetMinutes = getOffsetForTimezone(userTimezone, zonedBase);
+  const utcTimestamp = zonedBase.getTime() - offsetMinutes * 60 * 1000;
+
+  return new Date(utcTimestamp).toISOString();
 };
-const getTimezoneOffset = (timezone: string, date: Date): number => {
-  const utcDate = new Date(date.toLocaleString("en-US", { timeZone: "UTC" }));
-  const tzDate = new Date(date.toLocaleString("en-US", { timeZone: timezone }));
-  return (tzDate.getTime() - utcDate.getTime()) / 60000;
+
+const getOffsetForTimezone = (timezone: string, date: Date): number => {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    timeZoneName: "short",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(date);
+  const zoneName = parts.find((part) => part.type === "timeZoneName")?.value;
+
+  if (zoneName) {
+    const match = zoneName.match(/GMT([+-]\d{1,2})(?::?(\d{2}))?/i);
+    if (match) {
+      const sign = match[1].startsWith("-") ? -1 : 1;
+      const hours = Math.abs(parseInt(match[1], 10));
+      const minutes = match[2] ? parseInt(match[2], 10) : 0;
+      return sign * (hours * 60 + minutes);
+    }
+  }
+
+  // Fallback based on locale conversion if timeZoneName parsing fails
+  const localised = date.toLocaleString("en-US", { timeZone: timezone });
+  const parsedDate = new Date(localised);
+  return (parsedDate.getTime() - date.getTime()) / 60000;
 };
 export const getTimezoneLabel = (timezone: string): string => {
   const tz = TIMEZONES.find((t) => t.value === timezone);

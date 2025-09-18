@@ -52,6 +52,7 @@ export default function Members() {
     },
   });
   const filteredMembers = members.filter((member: any) => {
+    const isActive = member.isActive ?? member.is_active ?? true;
     const matchesSearch =
       member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -59,7 +60,7 @@ export default function Members() {
     const matchesRole = roleFilter === "all" || member.role === roleFilter;
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "active" ? member.isActive : !member.isActive);
+      (statusFilter === "active" ? isActive : !isActive);
     return matchesSearch && matchesRole && matchesStatus;
   });
   const handleDelete = (id: string) => {
@@ -252,12 +253,12 @@ export default function Members() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
-                          member.isActive
+                          (member.isActive ?? member.is_active ?? true)
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
                         }`}
                       >
-                        {member.isActive ? (
+                        {(member.isActive ?? member.is_active ?? true) ? (
                           <>
                             <UserCheck className="h-3 w-3" />
                             Aktiv
