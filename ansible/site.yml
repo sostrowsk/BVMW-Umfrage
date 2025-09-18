@@ -1,0 +1,14 @@
+---
+- name: Deploy BVMW Survey Platform
+  hosts: production
+  become: yes
+  vars:
+    app_dir: /opt/bvmw-survey
+    domain: umfrage.koeln-bvmw.de
+    email: admin@koeln-bvmw.de
+
+  roles:
+    - docker
+    - postgresql
+    - app
+    - nginx

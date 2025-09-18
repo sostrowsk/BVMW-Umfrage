@@ -1,0 +1,8 @@
+---
+- name: Deploy Application
+  hosts: production
+  become: yes
+  vars:
+    app_dir: /opt/bvmw-survey
+  roles:
+    - app

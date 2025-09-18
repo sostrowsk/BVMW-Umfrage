@@ -12,14 +12,29 @@ Edit `inventory.ini` with your server details:
 umfrage.koeln-bvmw.de ansible_user=root
 ```
 
-## Deploy
+## Deploy Everything
 ```bash
-ansible-playbook -i inventory.ini deploy.yml
+ansible-playbook -i inventory.ini site.yml
+```
+
+## Deploy Individual Components
+```bash
+# Install Docker only
+ansible-playbook -i inventory.ini docker.yml
+
+# Setup PostgreSQL only
+ansible-playbook -i inventory.ini postgresql.yml
+
+# Deploy application only
+ansible-playbook -i inventory.ini application.yml
+
+# Configure Nginx & SSL only
+ansible-playbook -i inventory.ini webserver.yml
 ```
 
 ## Dry Run
 ```bash
-ansible-playbook -i inventory.ini deploy.yml --check
+ansible-playbook -i inventory.ini site.yml --check
 ```
 
 ## What It Does

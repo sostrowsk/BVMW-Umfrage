@@ -1,0 +1,55 @@
+---
+- name: install_packages
+  apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+
+- name: start_service
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: create_user
+  become_user: postgres
+  postgresql_user:
+    name: user
+    password: password
+    role_attr_flags: CREATEDB,NOSUPERUSER
+
+- name: create_database
+  become_user: postgres
+  postgresql_db:
+    name: survey_platform
+    owner: user
+    encoding: UTF-8
+
+- name: configure_listen
+  lineinfile:
+    path: /etc/postgresql/15/main/postgresql.conf
+    regexp: '^#?listen_addresses'
+    line: "listen_addresses = '*'"
+  notify: restart_postgresql
+
+- name: configure_auth
+  lineinfile:
+    path: /etc/postgresql/15/main/pg_hba.conf
+    line: "host    all             all             172.0.0.0/8             md5"
+    insertafter: "^host.*all.*all.*127"
+  notify: restart_postgresql
+
+- name: restart_if_needed
+  meta: flush_handlers
+
+- name: copy_init_sql
+  copy:
+    src: "{{ playbook_dir }}/../init.sql"
+    dest: /tmp/init.sql
+
+- name: init_schema
+  become_user: postgres
+  shell: psql -d survey_platform -f /tmp/init.sql
+  ignore_errors: yes

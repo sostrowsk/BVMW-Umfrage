@@ -1,0 +1,9 @@
+---
+- name: Setup Nginx & SSL
+  hosts: production
+  become: yes
+  vars:
+    domain: umfrage.koeln-bvmw.de
+    email: admin@koeln-bvmw.de
+  roles:
+    - nginx

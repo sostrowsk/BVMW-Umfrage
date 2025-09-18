@@ -1,0 +1,6 @@
+---
+- name: Setup PostgreSQL
+  hosts: production
+  become: yes
+  roles:
+    - postgresql

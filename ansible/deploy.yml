@@ -162,18 +162,22 @@
         name: nginx
         state: present
 
-    - name: nginx_create_config
+    - name: certbot_check_certificate
+      stat:
+        path: /etc/letsencrypt/live/{{ domain }}/fullchain.pem
+      register: cert_exists
+
+    - name: nginx_create_initial_config
       template:
         src: nginx.conf.j2
         dest: /etc/nginx/sites-available/{{ domain }}
-      notify: nginx_reload
+      when: not cert_exists.stat.exists | default(True)
 
     - name: nginx_enable_site
       file:
         src: /etc/nginx/sites-available/{{ domain }}
         dest: /etc/nginx/sites-enabled/{{ domain }}
         state: link
-      notify: nginx_reload
 
     - name: nginx_remove_default
       file:
@@ -190,12 +194,17 @@
 
     - name: certbot_obtain_certificate
       command: >
-        certbot --nginx -d {{ domain }}
+        certbot certonly --nginx -d {{ domain }}
         --non-interactive --agree-tos
         --email {{ email }}
-        --redirect
-      args:
-        creates: /etc/letsencrypt/live/{{ domain }}/fullchain.pem
+        --keep-until-expiring
+      when: not cert_exists.stat.exists
+
+    - name: nginx_update_ssl_config
+      template:
+        src: nginx-ssl.conf.j2
+        dest: /etc/nginx/sites-available/{{ domain }}
+      notify: nginx_reload
 
     - name: certbot_setup_renewal
       cron:

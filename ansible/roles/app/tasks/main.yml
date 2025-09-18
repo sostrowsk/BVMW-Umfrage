@@ -1,0 +1,50 @@
+---
+- name: create_directory
+  file:
+    path: "{{ app_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: copy_files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ app_dir }}/{{ item.dest }}"
+    mode: preserve
+  loop:
+    - { src: "{{ playbook_dir }}/../docker-compose.prod.yml", dest: docker-compose.yml }
+    - { src: "{{ playbook_dir }}/../Dockerfile", dest: Dockerfile }
+    - { src: "{{ playbook_dir }}/../.dockerignore", dest: .dockerignore }
+    - { src: "{{ playbook_dir }}/../pyproject.toml", dest: pyproject.toml }
+    - { src: "{{ playbook_dir }}/../poetry.lock", dest: poetry.lock }
+    - { src: "{{ playbook_dir }}/../init.sql", dest: init.sql }
+
+- name: copy_source_code
+  synchronize:
+    src: "{{ playbook_dir }}/../app/"
+    dest: "{{ app_dir }}/app"
+    delete: yes
+
+- name: copy_frontend
+  synchronize:
+    src: "{{ playbook_dir }}/../frontend/"
+    dest: "{{ app_dir }}/frontend"
+    delete: yes
+
+- name: create_env_file
+  copy:
+    dest: "{{ app_dir }}/.env"
+    content: |
+      DATABASE_URL=postgresql://user:password@host.docker.internal:5432/survey_platform
+      SECRET_KEY={{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}
+      ALGORITHM=HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+- name: build_containers
+  command: docker-compose build
+  args:
+    chdir: "{{ app_dir }}"
+
+- name: start_containers
+  command: docker-compose up -d
+  args:
+    chdir: "{{ app_dir }}"
