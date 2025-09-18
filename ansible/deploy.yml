@@ -1,0 +1,216 @@
+---
+- name: Deploy BVMW Survey Platform
+  hosts: production
+  become: yes
+  vars:
+    app_dir: /opt/bvmw-survey
+    domain: umfrage.koeln-bvmw.de
+    email: admin@koeln-bvmw.de
+
+  tasks:
+    - name: install_docker_dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    - name: docker_add_gpg_key
+      apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+
+    - name: docker_add_repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
+        state: present
+        update_cache: yes
+
+    - name: docker_install_packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+
+    - name: docker_start_service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: install_docker_compose
+      get_url:
+        url: https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: postgresql_install_packages
+      apt:
+        name:
+          - postgresql
+          - postgresql-contrib
+          - python3-psycopg2
+        state: present
+
+    - name: postgresql_start_service
+      systemd:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: postgresql_create_user
+      become_user: postgres
+      postgresql_user:
+        name: user
+        password: password
+        role_attr_flags: CREATEDB,NOSUPERUSER
+
+    - name: postgresql_create_database
+      become_user: postgres
+      postgresql_db:
+        name: survey_platform
+        owner: user
+        encoding: UTF-8
+
+    - name: postgresql_configure_listen
+      lineinfile:
+        path: /etc/postgresql/15/main/postgresql.conf
+        regexp: '^#?listen_addresses'
+        line: "listen_addresses = '*'"
+      notify: postgresql_restart
+
+    - name: postgresql_configure_auth
+      lineinfile:
+        path: /etc/postgresql/15/main/pg_hba.conf
+        line: "host    all             all             172.0.0.0/8             md5"
+        insertafter: "^host.*all.*all.*127"
+      notify: postgresql_restart
+
+    - name: postgresql_restart_if_needed
+      meta: flush_handlers
+
+    - name: postgresql_copy_init_sql
+      copy:
+        src: ../init.sql
+        dest: /tmp/init.sql
+
+    - name: postgresql_init_schema
+      become_user: postgres
+      shell: psql -d survey_platform -f /tmp/init.sql
+      ignore_errors: yes
+
+    - name: app_create_directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: app_copy_files
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ app_dir }}/{{ item.dest }}"
+        mode: preserve
+      loop:
+        - { src: ../docker-compose.prod.yml, dest: docker-compose.yml }
+        - { src: ../Dockerfile, dest: Dockerfile }
+        - { src: ../.dockerignore, dest: .dockerignore }
+        - { src: ../pyproject.toml, dest: pyproject.toml }
+        - { src: ../poetry.lock, dest: poetry.lock }
+        - { src: ../init.sql, dest: init.sql }
+
+    - name: app_copy_source_code
+      synchronize:
+        src: ../app/
+        dest: "{{ app_dir }}/app"
+        delete: yes
+
+    - name: frontend_copy_directory
+      synchronize:
+        src: ../frontend/
+        dest: "{{ app_dir }}/frontend"
+        delete: yes
+
+    - name: env_create_file
+      copy:
+        dest: "{{ app_dir }}/.env"
+        content: |
+          DATABASE_URL=postgresql://user:password@db:5432/survey_platform
+          SECRET_KEY={{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}
+          ALGORITHM=HS256
+          ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+    - name: docker_build_containers
+      command: docker-compose build
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: docker_start_containers
+      command: docker-compose up -d
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: nginx_install
+      apt:
+        name: nginx
+        state: present
+
+    - name: nginx_create_config
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/{{ domain }}
+      notify: nginx_reload
+
+    - name: nginx_enable_site
+      file:
+        src: /etc/nginx/sites-available/{{ domain }}
+        dest: /etc/nginx/sites-enabled/{{ domain }}
+        state: link
+      notify: nginx_reload
+
+    - name: nginx_remove_default
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: nginx_reload
+
+    - name: certbot_install
+      apt:
+        name:
+          - certbot
+          - python3-certbot-nginx
+        state: present
+
+    - name: certbot_obtain_certificate
+      command: >
+        certbot --nginx -d {{ domain }}
+        --non-interactive --agree-tos
+        --email {{ email }}
+        --redirect
+      args:
+        creates: /etc/letsencrypt/live/{{ domain }}/fullchain.pem
+
+    - name: certbot_setup_renewal
+      cron:
+        name: "certbot renew"
+        minute: "0"
+        hour: "2"
+        job: "/usr/bin/certbot renew --quiet"
+
+  handlers:
+    - name: nginx_reload
+      systemd:
+        name: nginx
+        state: reloaded
+
+    - name: postgresql_restart
+      systemd:
+        name: postgresql
+        state: restarted

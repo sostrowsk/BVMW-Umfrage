@@ -3,6 +3,7 @@ name = "survey-platform-platform"
 version = "0.1.0"
 description = "Survey platform for members"
 authors = ["Jules <agent@example.com>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
