@@ -5,10 +5,23 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
+def to_camel(value: str) -> str:
+    parts = value.split("_")
+    return parts[0] + "".join(word.capitalize() for word in parts[1:])
+
+
+def camel_config(**extra: Any) -> ConfigDict:
+    return ConfigDict(alias_generator=to_camel, populate_by_name=True, **extra)
+
+
+class CamelModel(BaseModel):
+    model_config = camel_config()
+
+
 # =============================================================================
 # Organization Schemas
 # =============================================================================
-class OrganizationBase(BaseModel):
+class OrganizationBase(CamelModel):
     name: str
     size_category: str | None = None
     industry: str | None = None
@@ -19,7 +32,7 @@ class OrganizationCreate(OrganizationBase):
     pass
 
 
-class OrganizationUpdate(BaseModel):
+class OrganizationUpdate(CamelModel):
     name: str | None = None
     size_category: str | None = None
     industry: str | None = None
@@ -29,7 +42,7 @@ class OrganizationUpdate(BaseModel):
 class Organization(OrganizationBase):
     id: uuid.UUID
     created_at: datetime
-    model_config = ConfigDict(from_attributes=True)
+    model_config = camel_config(from_attributes=True)
 
 
 # =============================================================================
